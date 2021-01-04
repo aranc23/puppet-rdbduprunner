@@ -24,6 +24,9 @@
 # @param defaultbackupdestination
 #    sets global rdbduprunner parameter of the same name
 #
+# @param excludepath
+#    sets global rdbduprunner parameter of the same name but does not change where this module creates exclude files! (don't use this)
+#
 # @param maxprocs
 #    sets global rdbduprunner parameter of the same name
 #
@@ -110,6 +113,14 @@
 # @param rdbdup_tag_excludes
 #   creates files in the "rdb-excludes" directory, named after the tag referenced, see examples
 #
+# @param repo
+#   install this git repo into the config dir, used to install rdbduprunner itself
+# @param repo_revision
+#   passed to the repo_revision parameter of the vcsrepo used to install rdbduprunner
+# @param logrotate
+#   add a logrotate script for rdbduprunner logs
+# @param purge_excludes
+#   purge non-managed files from the exclude directories (rdb-excludes and excludes)
 # @example Basic usage
 #  include rdbduprunner
 #
