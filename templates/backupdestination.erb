@@ -1,0 +1,15 @@
+<BackupDestination <%= @title %>>
+<% @string_vars.each do |i|
+if scope[i.downcase] and not scope[i.downcase].nil? and scope[i.downcase].is_a?(String) and scope[i.downcase].length > 0 -%>
+  <%= i %> <%= scope[i.downcase] %>
+<% end end-%>
+  Type <%= scope['backup_type'] %>
+<% @boolean_vars.each do |i|
+if not scope[i.downcase].nil? and ( scope[i.downcase] == true or scope[i.downcase] == false ) -%>
+  <%= i %> <%= scope[i.downcase].to_s %>
+<% end end -%>
+<% @integer_vars.each do |i|
+if scope[i.downcase] and not scope[i.downcase].nil? and scope[i.downcase].is_a?(Integer) -%>
+  <%= i %> <%= scope[i.downcase].to_s %>
+<% end end -%>
+</BackupDestination>

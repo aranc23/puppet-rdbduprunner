@@ -1,0 +1,8 @@
+/var/log/rdbduprunner/*.log {
+    missingok
+    weekly
+    delaycompress
+    compress
+    rotate 25
+    dateext
+}

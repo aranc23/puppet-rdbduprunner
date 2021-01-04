@@ -1,0 +1,5 @@
+# Run rdbduprunner
+SHELL=/bin/bash
+PATH=/sbin:/bin:/usr/sbin:/usr/bin
+MAILTO=root
+<%= @minute ? @minute : '*' %> <%= @hour ? @hour : '*' %> <%= @monthday ? @monthday : '*' %> <%= @month ? @month : '*' %> <%= @weekday ? @weekday : '*' %> <%= @user %> <%= @cmd_resolved %>

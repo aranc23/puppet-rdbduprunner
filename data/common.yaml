@@ -1,0 +1,44 @@
+---
+lookup_options:
+  rdbduprunner::backupsets:
+    merge:
+      strategy: deep
+      sort_merged_arrays: true
+      knockout_prefix: '---'
+  rdbduprunner::backupdestinations:
+    merge:
+      strategy: deep
+      sort_merged_arrays: true
+      knockout_prefix: '---'
+  rdbduprunner::rsync_tag_excludes:
+    merge:
+      strategy: deep
+      sort_merged_arrays: true
+      knockout_prefix: '---'
+  rdbduprunner::rdbdup_tag_excludes:
+    merge:
+      strategy: deep
+      sort_merged_arrays: true
+      knockout_prefix: '---'
+
+rdbduprunner::packages: ['perl-Config-General','perl-Log-Dispatch','perl-YAML']
+rdbduprunner::owner: root
+rdbduprunner::group: 0
+rdbduprunner::mode: '0440'
+rdbduprunner::config_dir: '/etc/rdbduprunner'
+rdbduprunner::config_file: '/etc/rdbduprunner.rc'
+rdbduprunner::backupsets: {}
+rdbduprunner::backupdestinations: {}
+rdbduprunner::excludepath: ~
+rdbduprunner::default_skips: []
+rdbduprunner::default_skipres: []
+rdbduprunner::cron_method: 'anacron'
+rdbduprunner::anacron_frequency: 'daily'
+rdbduprunner::cron_resource_name: 'rdbduprunner'
+rdbduprunner::systemd_service_name: 'rdbduprunner'
+rdbduprunner::log_level: 'info'
+rdbduprunner::cmd: 'test -x /usr/bin/keychain && eval $( /usr/bin/keychain --eval --quiet ) ; <%= @executable %> --config <%= @config_file %> --level <%= @log_level %> --notest'
+rdbduprunner::executable: '/usr/bin/rdbduprunner'
+rdbduprunner::repo: 'https://github.com/aranc23/rdbduprunner.git'
+rdbduprunner::logrotate: 'present'
+rdbduprunner::purge_excludes: false

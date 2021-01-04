@@ -1,0 +1,30 @@
+<BackupSet <%= @title %>>
+<% if @backupdestination != nil and @backupdestination.is_a?(String) and @backupdestination.length > 0 -%>
+  BackupDestination <%= @backupdestination %>
+<% end -%>
+<% if not @disabled.nil? and ( @disabled == true or @disabled == false ) -%>
+  Disabled <%= @disabled.to_s %>
+<% end -%>
+<% ['PreRun','PostRun','Host'].each do |p|
+if not scope[p.downcase].nil? and scope[p.downcase].is_a?(String) and scope[p.downcase].length > 0 -%>
+  <%= p %> <%= scope[p.downcase] %>
+<% end end -%>
+<% if ( scope['inventory'] == true or scope['inventory'] == false ) -%>
+  Inventory <%= scope['inventory'].to_s %>
+<% end -%>
+<% if scope['rtag'] and scope['rtag'] != nil and scope['rtag'].is_a?(String) and scope['rtag'].length > 0 -%>
+  Tag <%= scope['rtag'] %>
+<% end -%>
+<% if ( scope['inplace'] == true or scope['inplace'] == false ) -%>
+  Inplace <%= scope['inplace'].to_s %>
+<% end -%>
+<% @array_vars.each do |p|
+key = "#{p}s".downcase
+if scope[key] then scope[key].each do |v| -%>
+  <%= p %> <%= v %>
+<% end end end -%>
+<% @integer_vars.each do |i|
+if scope[i.downcase] and not scope[i.downcase].nil? and scope[i.downcase].is_a?(Integer) -%>
+  <%= i %> <%= scope[i.downcase].to_s %>
+<% end end -%>
+</BackupSet>
