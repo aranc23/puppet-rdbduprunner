@@ -115,9 +115,5 @@ define rdbduprunner::autobackup
   # rely on the rdbduprunner module to run rdbduprunner
   file { "/etc/cron.daily/rdbduprunner_autobackup_${title}.sh":
     ensure => absent,
-    owner  => 'root',
-    group  => 0,
-    mode   => '0550',
-    source => 'puppet:///modules/rdbduprunner/rdbduprunner_autobackup.sh',
   }
 }
