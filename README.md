@@ -172,7 +172,7 @@ host, use the shortname.  If it uses the FQDN, use that in the tag.
 
 ## Reference
 
-Please see the REFERENCES.md file.
+Please see the [REFERENCES.md](REFERENCES.md) file.
 
 ## Limitations
 
