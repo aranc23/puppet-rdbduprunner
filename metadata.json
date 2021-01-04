@@ -1,6 +1,6 @@
 {
   "name": "aranc23-rdbduprunner",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "author": "Aran Cox",
   "summary": "Install and configure rdbduprunner",
   "license": "Apache-2.0",
