@@ -94,6 +94,8 @@
 #   how to invoke rdbduprunner, passed through inline_template to substitute the path to rdbduprunner, etc.
 # @param executable
 #   where to put rdbduprunner, typically /usr/bin/rdbduprunner
+# @param executable_source
+#   where to get the simple rdbduprunner script
 # @param rsync_tag_excludes Hash[String,Array[String]]
 #   replaces static files in /etc/rdbduprunner/excludes, keyed by "tag" and then a list of excludes
 #   => { 'a-lnx005.divms.uiowa.edu-home-accx' => [ 'hidden_stuff', 'DVDs' ] }
@@ -113,10 +115,7 @@
 # @param rdbdup_tag_excludes
 #   creates files in the "rdb-excludes" directory, named after the tag referenced, see examples
 #
-# @param repo
-#   install this git repo into the config dir, used to install rdbduprunner itself
-# @param repo_revision
-#   passed to the repo_revision parameter of the vcsrepo used to install rdbduprunner
+
 # @param logrotate
 #   add a logrotate script for rdbduprunner logs
 # @param purge_excludes
@@ -219,11 +218,10 @@ class rdbduprunner
   $weekday     = undef,
   Enum['debug','info','notice','warning','error','critical','alert','emergency'] $log_level,
   String $cmd,
-  String $executable,
+  String $executable = '/usr/bin/rdbduprunner',
+  Optional[Stdlib::Filesource] $executable_source = 'https://raw.githubusercontent.com/aranc23/rdbduprunner/master/rdbduprunner',
   Hash[String,Array[String]] $rsync_tag_excludes = {},
   Hash[String,Array[String]] $rdbdup_tag_excludes = {},
-  String $repo,
-  Optional[String] $repo_revision = undef,
   Enum['present','absent'] $logrotate,
   Boolean $purge_excludes,
 ) {

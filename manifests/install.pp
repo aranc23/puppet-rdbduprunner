@@ -10,17 +10,11 @@ class rdbduprunner::install
     group  => $rdbduprunner::group,
     mode   => '0775',
   }
-  -> vcsrepo { "${rdbduprunner::config_dir}/repo":
-    ensure   => present,
-    provider => git,
-    source   => $rdbduprunner::repo,
-    revision => $rdbduprunner::repo_revision,
-  }
-  -> file { $rdbduprunner::executable:
+  file { $rdbduprunner::executable:
     owner  => 'root',
     group  => 0,
     mode   => '0555',
-    source => "${rdbduprunner::config_dir}/repo/rdbduprunner",
+    source => $rdbduprunner::executable_source,
   }
   file { "${rdbduprunner::config_dir}/conf.d":
     ensure => directory,

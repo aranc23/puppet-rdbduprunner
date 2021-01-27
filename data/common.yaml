@@ -38,7 +38,5 @@ rdbduprunner::cron_resource_name: 'rdbduprunner'
 rdbduprunner::systemd_service_name: 'rdbduprunner'
 rdbduprunner::log_level: 'info'
 rdbduprunner::cmd: 'test -x /usr/bin/keychain && eval $( /usr/bin/keychain --eval --quiet ) ; <%= @executable %> --config <%= @config_file %> --level <%= @log_level %> --notest'
-rdbduprunner::executable: '/usr/bin/rdbduprunner'
-rdbduprunner::repo: 'https://github.com/aranc23/rdbduprunner.git'
 rdbduprunner::logrotate: 'present'
 rdbduprunner::purge_excludes: false
