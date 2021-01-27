@@ -22,7 +22,7 @@
 
 ### `rdbduprunner`
 
-install and configure rdbduprunner
+install rdbduprunner from a file source, configure the service!
 
 #### Examples
 
@@ -128,6 +128,14 @@ Default value: ``undef``
 Data type: `Optional[String]`
 
 sets global rdbduprunner parameter of the same name
+
+Default value: ``undef``
+
+##### `excludepath`
+
+Data type: `Optional[String]`
+
+sets global rdbduprunner parameter of the same name but does not change where this module creates exclude files! (don't use this)
 
 Default value: ``undef``
 
@@ -299,6 +307,16 @@ Data type: `String`
 
 where to put rdbduprunner, typically /usr/bin/rdbduprunner
 
+Default value: `'/usr/bin/rdbduprunner'`
+
+##### `executable_source`
+
+Data type: `Optional[Stdlib::Filesource]`
+
+where to get the simple rdbduprunner script
+
+Default value: `'https://raw.githubusercontent.com/aranc23/rdbduprunner/master/rdbduprunner'`
+
 ##### `rsync_tag_excludes`
 
 Data type: `Hash[String,Array[String]]`
@@ -348,7 +366,7 @@ Data type: `Hash[String,Struct[{
     zfscreate                => Optional[Boolean],
     zfssnapshot              => Optional[Boolean],
     inplace                  => Optional[Boolean],
-    backup_type              => Enum['rsync','duplicity','rdiff-backup'],
+    backup_type              => Optional[Enum['rsync','duplicity','rdiff-backup']],
     path                     => String,
     percentused              => Optional[Integer],
     minfree                  => Optional[Integer],
@@ -368,6 +386,18 @@ Default value: `{}`
 creates files in the "rdb-excludes" directory, named after the tag referenced, see examples
 
 Default value: `{}`
+
+##### `logrotate`
+
+Data type: `Enum['present','absent']`
+
+add a logrotate script for rdbduprunner logs
+
+##### `purge_excludes`
+
+Data type: `Boolean`
+
+purge non-managed files from the exclude directories (rdb-excludes and excludes)
 
 ### `rdbduprunner::backup`
 

@@ -1,5 +1,9 @@
 # @summary install and configure rdbduprunner
 #
+# install rdbduprunner from a file source, configure the service!
+#
+#
+#
 # @param packages
 #   install these perl packages to make rdbduprunner run
 #
@@ -115,7 +119,6 @@
 # @param rdbdup_tag_excludes
 #   creates files in the "rdb-excludes" directory, named after the tag referenced, see examples
 #
-
 # @param logrotate
 #   add a logrotate script for rdbduprunner logs
 # @param purge_excludes
