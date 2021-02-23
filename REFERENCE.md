@@ -20,7 +20,7 @@
 
 ## Classes
 
-### `rdbduprunner`
+### <a name="rdbduprunner"></a>`rdbduprunner`
 
 install rdbduprunner from a file source, configure the service!
 
@@ -77,45 +77,88 @@ rdbduprunner::rsync_tag_excludes:
 
 #### Parameters
 
-The following parameters are available in the `rdbduprunner` class.
+The following parameters are available in the `rdbduprunner` class:
 
-##### `packages`
+* [`packages`](#packages)
+* [`owner`](#owner)
+* [`group`](#group)
+* [`mode`](#mode)
+* [`config_dir`](#config_dir)
+* [`config_file`](#config_file)
+* [`zfsbinary`](#zfsbinary)
+* [`defaultbackupdestination`](#defaultbackupdestination)
+* [`excludepath`](#excludepath)
+* [`maxprocs`](#maxprocs)
+* [`maxinc`](#maxinc)
+* [`allowfs`](#allowfs)
+* [`duplicitybinary`](#duplicitybinary)
+* [`rdiffbackupbinary`](#rdiffbackupbinary)
+* [`rsyncbinary`](#rsyncbinary)
+* [`lockfile`](#lockfile)
+* [`useagent`](#useagent)
+* [`tempdir`](#tempdir)
+* [`maxwait`](#maxwait)
+* [`default_skips`](#default_skips)
+* [`default_skipres`](#default_skipres)
+* [`cron_method`](#cron_method)
+* [`anacron_frequency`](#anacron_frequency)
+* [`cron_resource_name`](#cron_resource_name)
+* [`systemd_service_name`](#systemd_service_name)
+* [`hour`](#hour)
+* [`minute`](#minute)
+* [`monthday`](#monthday)
+* [`month`](#month)
+* [`weekday`](#weekday)
+* [`log_level`](#log_level)
+* [`cmd`](#cmd)
+* [`executable`](#executable)
+* [`executable_source`](#executable_source)
+* [`rsync_tag_excludes`](#rsync_tag_excludes)
+* [`rdbdup_tag_excludes`](#rdbdup_tag_excludes)
+* [`backupsets`](#backupsets)
+* [`backupdestinations`](#backupdestinations)
+* [`rsync_tag_excludes`](#rsync_tag_excludes)
+* [`rdbdup_tag_excludes`](#rdbdup_tag_excludes)
+* [`logrotate`](#logrotate)
+* [`purge_excludes`](#purge_excludes)
+
+##### <a name="packages"></a>`packages`
 
 Data type: `Array[String]`
 
 install these perl packages to make rdbduprunner run
 
-##### `owner`
+##### <a name="owner"></a>`owner`
 
 Data type: `Variant[String,Integer]`
 
 set most/some files to this user or uid
 
-##### `group`
+##### <a name="group"></a>`group`
 
 Data type: `Variant[String,Integer]`
 
 set most/some files to this group or gid
 
-##### `mode`
+##### <a name="mode"></a>`mode`
 
 Data type: `String`
 
 set most/some files to this octal mode string
 
-##### `config_dir`
+##### <a name="config_dir"></a>`config_dir`
 
 Data type: `String`
 
 configuration directory (typically /etc/rdbduprunner)
 
-##### `config_file`
+##### <a name="config_file"></a>`config_file`
 
 Data type: `String`
 
 config file to manage
 
-##### `zfsbinary`
+##### <a name="zfsbinary"></a>`zfsbinary`
 
 Data type: `Optional[String]`
 
@@ -123,7 +166,7 @@ sets global rdbduprunner parameter of the same name
 
 Default value: ``undef``
 
-##### `defaultbackupdestination`
+##### <a name="defaultbackupdestination"></a>`defaultbackupdestination`
 
 Data type: `Optional[String]`
 
@@ -131,7 +174,7 @@ sets global rdbduprunner parameter of the same name
 
 Default value: ``undef``
 
-##### `excludepath`
+##### <a name="excludepath"></a>`excludepath`
 
 Data type: `Optional[String]`
 
@@ -139,7 +182,7 @@ sets global rdbduprunner parameter of the same name but does not change where th
 
 Default value: ``undef``
 
-##### `maxprocs`
+##### <a name="maxprocs"></a>`maxprocs`
 
 Data type: `Optional[Integer]`
 
@@ -147,7 +190,7 @@ sets global rdbduprunner parameter of the same name
 
 Default value: ``undef``
 
-##### `maxinc`
+##### <a name="maxinc"></a>`maxinc`
 
 Data type: `Optional[Integer]`
 
@@ -155,7 +198,15 @@ sets global rdbduprunner parameter of the same name
 
 Default value: ``undef``
 
-##### `duplicitybinary`
+##### <a name="allowfs"></a>`allowfs`
+
+Data type: `Optional[Array[String]]`
+
+sets global rdbduprunner parameter of the same name
+
+Default value: `[]`
+
+##### <a name="duplicitybinary"></a>`duplicitybinary`
 
 Data type: `Optional[String]`
 
@@ -163,7 +214,7 @@ path to duplicity
 
 Default value: ``undef``
 
-##### `rdiffbackupbinary`
+##### <a name="rdiffbackupbinary"></a>`rdiffbackupbinary`
 
 Data type: `Optional[String]`
 
@@ -171,7 +222,7 @@ path to rdiff-backup
 
 Default value: ``undef``
 
-##### `rsyncbinary`
+##### <a name="rsyncbinary"></a>`rsyncbinary`
 
 Data type: `Optional[String]`
 
@@ -179,7 +230,7 @@ path to rsync
 
 Default value: ``undef``
 
-##### `lockfile`
+##### <a name="lockfile"></a>`lockfile`
 
 Data type: `Optional[String]`
 
@@ -187,7 +238,7 @@ do not use this, not sure what it does
 
 Default value: ``undef``
 
-##### `useagent`
+##### <a name="useagent"></a>`useagent`
 
 Data type: `Optional[Boolean]`
 
@@ -195,7 +246,7 @@ passes --use-agent to duplicity
 
 Default value: ``undef``
 
-##### `tempdir`
+##### <a name="tempdir"></a>`tempdir`
 
 Data type: `Optional[String]`
 
@@ -203,7 +254,7 @@ tries to convince underlying backup software to use this directory for temp file
 
 Default value: ``undef``
 
-##### `maxwait`
+##### <a name="maxwait"></a>`maxwait`
 
 Data type: `Optional[Integer]`
 
@@ -211,44 +262,44 @@ sets global rdbduprunner parameter of the same name
 
 Default value: ``undef``
 
-##### `default_skips`
+##### <a name="default_skips"></a>`default_skips`
 
 Data type: `Array[String]`
 
 adds these to the skips array in backup sets, kind of useless, may be removed
 
-##### `default_skipres`
+##### <a name="default_skipres"></a>`default_skipres`
 
 Data type: `Array[String]`
 
 adds these to the skipres array in backup sets, kind of useless, may be removed
 
-##### `cron_method`
+##### <a name="cron_method"></a>`cron_method`
 
 Data type: `Enum['cron','cron.d','anacron','systemd','none']`
 
 how to configure the invocation of rdbduprunner periodically
 systemd is not implemented and none configures none
 
-##### `anacron_frequency`
+##### <a name="anacron_frequency"></a>`anacron_frequency`
 
 Data type: `Enum['monthly','weekly','daily','hourly','yearly']`
 
 if using anacron as above, which directory do we put the run script in
 
-##### `cron_resource_name`
+##### <a name="cron_resource_name"></a>`cron_resource_name`
 
 Data type: `String`
 
 what do we call the file in anacron or cron.d, the special name in cron, etc.
 
-##### `systemd_service_name`
+##### <a name="systemd_service_name"></a>`systemd_service_name`
 
 Data type: `String`
 
 what to name the systemd service (not implemented)
 
-##### `hour`
+##### <a name="hour"></a>`hour`
 
 Data type: `Any`
 
@@ -256,7 +307,7 @@ used in the cron.d and traditional cron entries
 
 Default value: `fqdn_rand(4)`
 
-##### `minute`
+##### <a name="minute"></a>`minute`
 
 Data type: `Any`
 
@@ -264,7 +315,7 @@ used in the cron.d and traditional cron entries
 
 Default value: `fqdn_rand(60)`
 
-##### `monthday`
+##### <a name="monthday"></a>`monthday`
 
 Data type: `Any`
 
@@ -272,7 +323,7 @@ used in the cron.d and traditional cron entries
 
 Default value: ``undef``
 
-##### `month`
+##### <a name="month"></a>`month`
 
 Data type: `Any`
 
@@ -280,7 +331,7 @@ used in the cron.d and traditional cron entries
 
 Default value: ``undef``
 
-##### `weekday`
+##### <a name="weekday"></a>`weekday`
 
 Data type: `Any`
 
@@ -288,20 +339,20 @@ used in the cron.d and traditional cron entries
 
 Default value: ``undef``
 
-##### `log_level`
+##### <a name="log_level"></a>`log_level`
 
 Data type: `Enum['debug','info','notice','warning','error','critical','alert','emergency']`
 
 Enum['debug','info','notice','warning','error','critical','alert','emergency']
 passed to rdbduprunner as is to determine verbosity of log output
 
-##### `cmd`
+##### <a name="cmd"></a>`cmd`
 
 Data type: `String`
 
 how to invoke rdbduprunner, passed through inline_template to substitute the path to rdbduprunner, etc.
 
-##### `executable`
+##### <a name="executable"></a>`executable`
 
 Data type: `String`
 
@@ -309,7 +360,7 @@ where to put rdbduprunner, typically /usr/bin/rdbduprunner
 
 Default value: `'/usr/bin/rdbduprunner'`
 
-##### `executable_source`
+##### <a name="executable_source"></a>`executable_source`
 
 Data type: `Optional[Stdlib::Filesource]`
 
@@ -317,7 +368,7 @@ where to get the simple rdbduprunner script
 
 Default value: `'https://raw.githubusercontent.com/aranc23/rdbduprunner/master/rdbduprunner'`
 
-##### `rsync_tag_excludes`
+##### <a name="rsync_tag_excludes"></a>`rsync_tag_excludes`
 
 Data type: `Hash[String,Array[String]]`
 
@@ -327,7 +378,7 @@ replaces static files in /etc/rdbduprunner/excludes, keyed by "tag" and then a l
 
 Default value: `{}`
 
-##### `rdbdup_tag_excludes`
+##### <a name="rdbdup_tag_excludes"></a>`rdbdup_tag_excludes`
 
 Data type: `Hash[String,Array[String]]`
 
@@ -337,7 +388,7 @@ replaces static files in /etc/rdbduprunner/rdb-excludes, keyed by "tag" and then
 
 Default value: `{}`
 
-##### `backupsets`
+##### <a name="backupsets"></a>`backupsets`
 
 Data type: `Hash[String,Struct[{
     config_file              => Optional[String],
@@ -346,6 +397,7 @@ Data type: `Hash[String,Struct[{
     skips                    => Optional[Array[String]],
     skipres                  => Optional[Array[String]],
     excludes                 => Optional[Array[String]],
+    allowfs                  => Optional[Array[String]],
     backupdestination        => Optional[String],
     inventory                => Optional[Boolean],
     inplace                  => Optional[Boolean],
@@ -360,7 +412,7 @@ Data type: `Hash[String,Struct[{
 
 creates backupset definitions, refer to rdbduprunner documentation for specifics
 
-##### `backupdestinations`
+##### <a name="backupdestinations"></a>`backupdestinations`
 
 Data type: `Hash[String,Struct[{
     zfscreate                => Optional[Boolean],
@@ -375,31 +427,31 @@ Data type: `Hash[String,Struct[{
 
 creates backupdestination definitions, refer to rdbduprunner documentation for specifics
 
-##### `rsync_tag_excludes`
+##### <a name="rsync_tag_excludes"></a>`rsync_tag_excludes`
 
 creates files in the "excludes" directory, named after the tag referenced, see examples
 
 Default value: `{}`
 
-##### `rdbdup_tag_excludes`
+##### <a name="rdbdup_tag_excludes"></a>`rdbdup_tag_excludes`
 
 creates files in the "rdb-excludes" directory, named after the tag referenced, see examples
 
 Default value: `{}`
 
-##### `logrotate`
+##### <a name="logrotate"></a>`logrotate`
 
 Data type: `Enum['present','absent']`
 
 add a logrotate script for rdbduprunner logs
 
-##### `purge_excludes`
+##### <a name="purge_excludes"></a>`purge_excludes`
 
 Data type: `Boolean`
 
 purge non-managed files from the exclude directories (rdb-excludes and excludes)
 
-### `rdbduprunner::backup`
+### <a name="rdbduprunnerbackup"></a>`rdbduprunner::backup`
 
 create a backupdestination and multiple backupsets, one per paths
 
@@ -433,9 +485,19 @@ creates:
 
 #### Parameters
 
-The following parameters are available in the `rdbduprunner::backup` class.
+The following parameters are available in the `rdbduprunner::backup` class:
 
-##### `ensure`
+* [`ensure`](#ensure)
+* [`directory`](#directory)
+* [`host`](#host)
+* [`destination`](#destination)
+* [`disabled`](#disabled)
+* [`prerun`](#prerun)
+* [`postrun`](#postrun)
+* [`priority`](#priority)
+* [`paths`](#paths)
+
+##### <a name="ensure"></a>`ensure`
 
 Data type: `Enum['present','absent']`
 
@@ -443,7 +505,7 @@ Present or absent or maybe something else
 
 Default value: `'present'`
 
-##### `directory`
+##### <a name="directory"></a>`directory`
 
 Data type: `Optional[String]`
 
@@ -451,7 +513,7 @@ path to conf.d directory
 
 Default value: `'/etc/rdbduprunner/conf.d'`
 
-##### `host`
+##### <a name="host"></a>`host`
 
 Data type: `Optional[String]`
 
@@ -459,13 +521,13 @@ defaults to local hostname
 
 Default value: `$::hostname`
 
-##### `destination`
+##### <a name="destination"></a>`destination`
 
 Data type: `Optional[String]`
 
 where to write the backups
 
-##### `disabled`
+##### <a name="disabled"></a>`disabled`
 
 Data type: `Optional[Boolean]`
 
@@ -473,7 +535,7 @@ enable/disable this backup
 
 Default value: ``false``
 
-##### `prerun`
+##### <a name="prerun"></a>`prerun`
 
 Data type: `Optional[String]`
 
@@ -481,7 +543,7 @@ run this before the backup
 
 Default value: ``undef``
 
-##### `postrun`
+##### <a name="postrun"></a>`postrun`
 
 Data type: `Optional[String]`
 
@@ -489,7 +551,7 @@ run this after the backup
 
 Default value: ``undef``
 
-##### `priority`
+##### <a name="priority"></a>`priority`
 
 Data type: `Optional[Integer]`
 
@@ -497,27 +559,27 @@ changes ordering of backups (probably does not work)
 
 Default value: ``undef``
 
-##### `paths`
+##### <a name="paths"></a>`paths`
 
 Data type: `Hash[String,Array[String]]`
 
 hash of paths with arrays to exclude per filesystem
 
-### `rdbduprunner::configure`
+### <a name="rdbduprunnerconfigure"></a>`rdbduprunner::configure`
 
 used by rdbduprunner to configure the software
 
-### `rdbduprunner::install`
+### <a name="rdbduprunnerinstall"></a>`rdbduprunner::install`
 
 used by rdbduprunner to install the software
 
-### `rdbduprunner::service`
+### <a name="rdbduprunnerservice"></a>`rdbduprunner::service`
 
 used by rdbduprunner to configure the service
 
 ## Defined types
 
-### `rdbduprunner::autobackup`
+### <a name="rdbduprunnerautobackup"></a>`rdbduprunner::autobackup`
 
 creates one backupset and one backupdestination in conf.d
 
@@ -536,15 +598,34 @@ rdbduprunner::autobackup { 'lss':
 
 #### Parameters
 
-The following parameters are available in the `rdbduprunner::autobackup` defined type.
+The following parameters are available in the `rdbduprunner::autobackup` defined type:
 
-##### `destination`
+* [`destination`](#destination)
+* [`ensure`](#ensure)
+* [`owner`](#owner)
+* [`group`](#group)
+* [`mode`](#mode)
+* [`host`](#host)
+* [`rtag`](#rtag)
+* [`disabled`](#disabled)
+* [`inventory`](#inventory)
+* [`inplace`](#inplace)
+* [`prerun`](#prerun)
+* [`postrun`](#postrun)
+* [`paths`](#paths)
+* [`excludes`](#excludes)
+* [`skips`](#skips)
+* [`skipres`](#skipres)
+* [`directory`](#directory)
+* [`backupdestination`](#backupdestination)
+
+##### <a name="destination"></a>`destination`
 
 Data type: `String`
 
 where to write the backups, used in the backupset
 
-##### `ensure`
+##### <a name="ensure"></a>`ensure`
 
 Data type: `Enum['absent','present']`
 
@@ -552,7 +633,7 @@ the usual present/absent magic
 
 Default value: `'present'`
 
-##### `owner`
+##### <a name="owner"></a>`owner`
 
 Data type: `Variant[String,Integer]`
 
@@ -560,7 +641,7 @@ user uid to create configuration file as
 
 Default value: `'root'`
 
-##### `group`
+##### <a name="group"></a>`group`
 
 Data type: `Variant[String,Integer]`
 
@@ -568,7 +649,7 @@ group or gid for the configuration file
 
 Default value: `0`
 
-##### `mode`
+##### <a name="mode"></a>`mode`
 
 Data type: `String`
 
@@ -576,7 +657,7 @@ octal mode string for config file
 
 Default value: `'0440'`
 
-##### `host`
+##### <a name="host"></a>`host`
 
 Data type: `String`
 
@@ -584,7 +665,7 @@ which host to back up, leave blank for localhost
 
 Default value: `$::hostname`
 
-##### `rtag`
+##### <a name="rtag"></a>`rtag`
 
 Data type: `Variant[String,Undef]`
 
@@ -592,7 +673,7 @@ override the tag in the backupset configuration, called rtag because tag is rese
 
 Default value: ``undef``
 
-##### `disabled`
+##### <a name="disabled"></a>`disabled`
 
 Data type: `Optional[Boolean]`
 
@@ -600,7 +681,7 @@ sets parameter of the same name in the backupset
 
 Default value: ``undef``
 
-##### `inventory`
+##### <a name="inventory"></a>`inventory`
 
 Data type: `Variant[Boolean,Undef]`
 
@@ -608,7 +689,7 @@ sets parameter of the same name in the backupset
 
 Default value: ``true``
 
-##### `inplace`
+##### <a name="inplace"></a>`inplace`
 
 Data type: `Variant[Boolean,Undef]`
 
@@ -616,7 +697,7 @@ sets parameter of the same name in the backupset
 
 Default value: ``undef``
 
-##### `prerun`
+##### <a name="prerun"></a>`prerun`
 
 Data type: `Variant[String,Undef]`
 
@@ -624,7 +705,7 @@ sets parameter of the same name in the backupset
 
 Default value: ``undef``
 
-##### `postrun`
+##### <a name="postrun"></a>`postrun`
 
 Data type: `Variant[String,Undef]`
 
@@ -632,7 +713,7 @@ sets parameter of the same name in the backupset
 
 Default value: ``undef``
 
-##### `paths`
+##### <a name="paths"></a>`paths`
 
 Data type: `Array[String]`
 
@@ -640,7 +721,7 @@ for each entry in this array, create a Path X statement in backupset
 
 Default value: `[]`
 
-##### `excludes`
+##### <a name="excludes"></a>`excludes`
 
 Data type: `Array[String]`
 
@@ -648,7 +729,7 @@ for each entry in this array, create a Exclude X statement in backupset
 
 Default value: `[]`
 
-##### `skips`
+##### <a name="skips"></a>`skips`
 
 Data type: `Array[String]`
 
@@ -656,7 +737,7 @@ for each entry in this array, create a Skip X statement in backupset
 
 Default value: `[ '/var/lib/mysql', '/var/lib/pgsql' ]`
 
-##### `skipres`
+##### <a name="skipres"></a>`skipres`
 
 Data type: `Array[String]`
 
@@ -664,7 +745,7 @@ for each entry in this array, create a SkipRE X statement in backupset
 
 Default value: `[ '^\/run\/media', '^\/var\/lib\/docker\/devicemapper' ]`
 
-##### `directory`
+##### <a name="directory"></a>`directory`
 
 Data type: `String`
 
@@ -672,7 +753,7 @@ Data type: `String`
 
 Default value: `'/etc/rdbduprunner/conf.d'`
 
-##### `backupdestination`
+##### <a name="backupdestination"></a>`backupdestination`
 
 Data type: `Variant[String,Undef]`
 
@@ -680,7 +761,7 @@ Data type: `Variant[String,Undef]`
 
 Default value: `$title`
 
-### `rdbduprunner::backupdestination`
+### <a name="rdbduprunnerbackupdestination"></a>`rdbduprunner::backupdestination`
 
 create a backupdestination in specified file
 
@@ -696,15 +777,30 @@ rdbduprunner::backupdestination { 'mylss':
 
 #### Parameters
 
-The following parameters are available in the `rdbduprunner::backupdestination` defined type.
+The following parameters are available in the `rdbduprunner::backupdestination` defined type:
 
-##### `path`
+* [`path`](#path)
+* [`inplace`](#inplace)
+* [`zfscreate`](#zfscreate)
+* [`zfssnapshot`](#zfssnapshot)
+* [`backup_type`](#backup_type)
+* [`percentused`](#percentused)
+* [`minfree`](#minfree)
+* [`maxinc`](#maxinc)
+* [`owner`](#owner)
+* [`group`](#group)
+* [`mode`](#mode)
+* [`config_file`](#config_file)
+* [`concat`](#concat)
+* [`ensure`](#ensure)
+
+##### <a name="path"></a>`path`
 
 Data type: `String`
 
 sets parameter of the same name in the backupdestination
 
-##### `inplace`
+##### <a name="inplace"></a>`inplace`
 
 Data type: `Optional[Boolean]`
 
@@ -712,7 +808,7 @@ sets parameter of the same name in the backupdestination
 
 Default value: ``undef``
 
-##### `zfscreate`
+##### <a name="zfscreate"></a>`zfscreate`
 
 Data type: `Optional[Boolean]`
 
@@ -720,7 +816,7 @@ sets parameter of the same name in the backupdestination
 
 Default value: ``undef``
 
-##### `zfssnapshot`
+##### <a name="zfssnapshot"></a>`zfssnapshot`
 
 Data type: `Optional[Boolean]`
 
@@ -728,7 +824,7 @@ sets parameter of the same name in the backupdestination
 
 Default value: ``undef``
 
-##### `backup_type`
+##### <a name="backup_type"></a>`backup_type`
 
 Data type: `Enum['rsync','duplicity','rdiff-backup']`
 
@@ -736,7 +832,7 @@ sets the type parameter in the backupdestination
 
 Default value: `'rsync'`
 
-##### `percentused`
+##### <a name="percentused"></a>`percentused`
 
 Data type: `Optional[Integer]`
 
@@ -744,7 +840,7 @@ sets parameter of the same name in the backupdestination
 
 Default value: ``undef``
 
-##### `minfree`
+##### <a name="minfree"></a>`minfree`
 
 Data type: `Optional[Integer]`
 
@@ -752,7 +848,7 @@ sets parameter of the same name in the backupdestination
 
 Default value: ``undef``
 
-##### `maxinc`
+##### <a name="maxinc"></a>`maxinc`
 
 Data type: `Optional[Integer]`
 
@@ -760,7 +856,7 @@ sets parameter of the same name in the backupdestination
 
 Default value: ``undef``
 
-##### `owner`
+##### <a name="owner"></a>`owner`
 
 Data type: `Variant[String,Integer]`
 
@@ -768,7 +864,7 @@ set most/some files to this user or uid
 
 Default value: `'root'`
 
-##### `group`
+##### <a name="group"></a>`group`
 
 Data type: `Variant[String,Integer]`
 
@@ -776,7 +872,7 @@ set most/some files to this group or gid
 
 Default value: `0`
 
-##### `mode`
+##### <a name="mode"></a>`mode`
 
 Data type: `String`
 
@@ -784,7 +880,7 @@ set most/some files to this octal mode string
 
 Default value: `'0440'`
 
-##### `config_file`
+##### <a name="config_file"></a>`config_file`
 
 Data type: `String`
 
@@ -792,7 +888,7 @@ config file in which to create the backupset definition
 
 Default value: `"/etc/rdbduprunner/conf.d/backupdestination-${title}.conf"`
 
-##### `concat`
+##### <a name="concat"></a>`concat`
 
 Data type: `Boolean`
 
@@ -800,7 +896,7 @@ instead of creating a file, use concat to add to file with concat::fragment
 
 Default value: ``false``
 
-##### `ensure`
+##### <a name="ensure"></a>`ensure`
 
 Data type: `Enum['present','absent']`
 
@@ -808,7 +904,7 @@ Data type: `Enum['present','absent']`
 
 Default value: `'present'`
 
-### `rdbduprunner::backupset`
+### <a name="rdbduprunnerbackupset"></a>`rdbduprunner::backupset`
 
 creates one backupset definition in specified file, used by the main module and ::backup and ::autobackup helpers
 
@@ -827,9 +923,30 @@ rdbduprunner::backupset { 'badhost':
 
 #### Parameters
 
-The following parameters are available in the `rdbduprunner::backupset` defined type.
+The following parameters are available in the `rdbduprunner::backupset` defined type:
 
-##### `owner`
+* [`owner`](#owner)
+* [`group`](#group)
+* [`mode`](#mode)
+* [`config_file`](#config_file)
+* [`concat`](#concat)
+* [`host`](#host)
+* [`disabled`](#disabled)
+* [`backupdestination`](#backupdestination)
+* [`inventory`](#inventory)
+* [`inplace`](#inplace)
+* [`prerun`](#prerun)
+* [`postrun`](#postrun)
+* [`maxinc`](#maxinc)
+* [`allowfs`](#allowfs)
+* [`paths`](#paths)
+* [`excludes`](#excludes)
+* [`skips`](#skips)
+* [`skipres`](#skipres)
+* [`ensure`](#ensure)
+* [`rtag`](#rtag)
+
+##### <a name="owner"></a>`owner`
 
 Data type: `Variant[String,Integer]`
 
@@ -837,7 +954,7 @@ set most/some files to this user or uid
 
 Default value: `'root'`
 
-##### `group`
+##### <a name="group"></a>`group`
 
 Data type: `Variant[String,Integer]`
 
@@ -845,7 +962,7 @@ set most/some files to this group or gid
 
 Default value: `0`
 
-##### `mode`
+##### <a name="mode"></a>`mode`
 
 Data type: `String`
 
@@ -853,7 +970,7 @@ set most/some files to this octal mode string
 
 Default value: `'0440'`
 
-##### `config_file`
+##### <a name="config_file"></a>`config_file`
 
 Data type: `String`
 
@@ -861,7 +978,7 @@ config file in which to create the backupset definition
 
 Default value: `"/etc/rdbduprunner/conf.d/backupset-${title}.conf"`
 
-##### `concat`
+##### <a name="concat"></a>`concat`
 
 Data type: `Boolean`
 
@@ -869,7 +986,7 @@ instead of creating a file, use concat to add to file with concat::fragment
 
 Default value: ``false``
 
-##### `host`
+##### <a name="host"></a>`host`
 
 Data type: `Optional[String]`
 
@@ -877,7 +994,7 @@ sets parameter of the same name in the backupset, although there is no default f
 
 Default value: ``undef``
 
-##### `disabled`
+##### <a name="disabled"></a>`disabled`
 
 Data type: `Optional[Boolean]`
 
@@ -885,7 +1002,7 @@ sets parameter of the same name in the backupset
 
 Default value: ``undef``
 
-##### `backupdestination`
+##### <a name="backupdestination"></a>`backupdestination`
 
 Data type: `Optional[String]`
 
@@ -893,7 +1010,7 @@ sets parameter of the same name in the backupset
 
 Default value: ``undef``
 
-##### `inventory`
+##### <a name="inventory"></a>`inventory`
 
 Data type: `Optional[Boolean]`
 
@@ -901,7 +1018,7 @@ sets parameter of the same name in the backupset
 
 Default value: ``undef``
 
-##### `inplace`
+##### <a name="inplace"></a>`inplace`
 
 Data type: `Optional[Boolean]`
 
@@ -909,7 +1026,7 @@ sets parameter of the same name in the backupset
 
 Default value: ``undef``
 
-##### `prerun`
+##### <a name="prerun"></a>`prerun`
 
 Data type: `Optional[String]`
 
@@ -917,7 +1034,7 @@ sets parameter of the same name in the backupset
 
 Default value: ``undef``
 
-##### `postrun`
+##### <a name="postrun"></a>`postrun`
 
 Data type: `Optional[String]`
 
@@ -925,7 +1042,7 @@ sets parameter of the same name in the backupset
 
 Default value: ``undef``
 
-##### `maxinc`
+##### <a name="maxinc"></a>`maxinc`
 
 Data type: `Optional[Integer]`
 
@@ -933,7 +1050,15 @@ sets parameter of the same name in the backupset
 
 Default value: ``undef``
 
-##### `paths`
+##### <a name="allowfs"></a>`allowfs`
+
+Data type: `Optional[Array[String]]`
+
+sets parameter of the same name in the backupset
+
+Default value: ``undef``
+
+##### <a name="paths"></a>`paths`
 
 Data type: `Optional[Array[String]]`
 
@@ -941,7 +1066,7 @@ for each entry in this array, create a Path X statement in backupset
 
 Default value: ``undef``
 
-##### `excludes`
+##### <a name="excludes"></a>`excludes`
 
 Data type: `Optional[Array[String]]`
 
@@ -949,7 +1074,7 @@ for each entry in this array, create a Exclude X statement in backupset
 
 Default value: ``undef``
 
-##### `skips`
+##### <a name="skips"></a>`skips`
 
 Data type: `Optional[Array[String]]`
 
@@ -957,7 +1082,7 @@ for each entry in this array, create a Skip X statement in backupset
 
 Default value: ``undef``
 
-##### `skipres`
+##### <a name="skipres"></a>`skipres`
 
 Data type: `Optional[Array[String]]`
 
@@ -965,7 +1090,7 @@ for each entry in this array, create a SkipRE X statement in backupset
 
 Default value: ``undef``
 
-##### `ensure`
+##### <a name="ensure"></a>`ensure`
 
 Data type: `Enum['present','absent']`
 
@@ -973,7 +1098,7 @@ the usual present/absent magic
 
 Default value: `'present'`
 
-##### `rtag`
+##### <a name="rtag"></a>`rtag`
 
 Data type: `Optional[String]`
 
