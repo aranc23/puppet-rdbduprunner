@@ -3,6 +3,12 @@ key="rdbduprunner::#{i.downcase}"
 if scope[key] and not scope[key].nil? and scope[key].is_a?(String) and scope[key].length > 0 -%>
 <%= i %> <%= scope[key] %>
 <% end end -%>
+<% @array_vars.sort.each do |i|
+key="rdbduprunner::#{i.downcase}"
+if scope[key] and not scope[key].nil? and scope[key].is_a?(Array) and scope[key].length > 0 -%>
+<% scope[key].each do |e| -%>
+<%= i %> <%= e %>
+<% end end end -%>
 <% @integer_vars.sort.each do |i|
 key="rdbduprunner::#{i.downcase}"
 if scope[key] and not scope[key].nil? and scope[key].is_a?(Integer) -%>

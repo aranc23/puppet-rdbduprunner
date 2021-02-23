@@ -30,6 +30,8 @@
 #   sets parameter of the same name in the backupset
 # @param maxinc
 #   sets parameter of the same name in the backupset
+# @param allowfs
+#   sets parameter of the same name in the backupset
 # @param paths
 #   for each entry in this array, create a Path X statement in backupset
 # @param excludes
@@ -64,6 +66,7 @@ define rdbduprunner::backupset
   Optional[Array[String]] $skips = undef,
   Optional[Array[String]] $skipres = undef,
   Optional[Array[String]] $excludes = undef,
+  Optional[Array[String]] $allowfs = undef,
   Optional[String] $backupdestination = undef,
   Optional[Boolean] $inventory = undef,
   Optional[Boolean] $inplace = undef,
@@ -75,8 +78,8 @@ define rdbduprunner::backupset
 )
 {
   $integer_vars = ['MaxInc']
-  $array_vars = ['Path','Exclude','SkipRE','Skip']
-
+  $array_vars = ['Path','Exclude','SkipRE','Skip','AllowFS']
+  $allowfss = $allowfs
   if $concat {
     concat::fragment { "backupset|${title}|${config_file}":
       target  => $config_file,

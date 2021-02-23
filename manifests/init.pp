@@ -37,6 +37,9 @@
 # @param maxinc
 #    sets global rdbduprunner parameter of the same name
 #
+# @param allowfs
+#    sets global rdbduprunner parameter of the same name
+#
 # @param duplicitybinary
 #    path to duplicity
 #
@@ -171,6 +174,7 @@ class rdbduprunner
   Optional[String]     $excludepath = undef,
   Optional[Integer]     $maxprocs = undef,
   Optional[Integer]     $maxinc = undef,
+  Optional[Array[String]]     $allowfs = [],
   Optional[String]     $duplicitybinary = undef,
   Optional[String]     $rdiffbackupbinary = undef,
   Optional[String]     $rsyncbinary = undef,
@@ -195,6 +199,7 @@ class rdbduprunner
     skips                    => Optional[Array[String]],
     skipres                  => Optional[Array[String]],
     excludes                 => Optional[Array[String]],
+    allowfs                  => Optional[Array[String]],
     backupdestination        => Optional[String],
     inventory                => Optional[Boolean],
     inplace                  => Optional[Boolean],
