@@ -63,11 +63,11 @@ class rdbduprunner::configure
     }
   }
   file { "${rdbduprunner::config_dir}/excludes":
-    owner   => $rdbduprunner::owner,
-    group   => $rdbduprunner::group,
-    mode    => '0775',
-    purge   => $rdbduprunner::purge_excludes,
-    ensure  => directory,
+    ensure => directory,
+    owner  => $rdbduprunner::owner,
+    group  => $rdbduprunner::group,
+    mode   => '0775',
+    purge  => $rdbduprunner::purge_excludes,
   }
   $rdbduprunner::rsync_tag_excludes.each |String $tag, Array $e| {
     file { "${rdbduprunner::config_dir}/excludes/${tag}":
@@ -78,17 +78,17 @@ class rdbduprunner::configure
     }
   }
   file { "${rdbduprunner::config_dir}/rdb-excludes":
-    owner   => $rdbduprunner::owner,
-    group   => $rdbduprunner::group,
-    mode    => '0664',
-    purge   => $rdbduprunner::purge_excludes,
-    ensure  => directory,
+    ensure => directory,
+    owner  => $rdbduprunner::owner,
+    group  => $rdbduprunner::group,
+    mode   => '0775',
+    purge  => $rdbduprunner::purge_excludes,
   }
   $rdbduprunner::rdbdup_tag_excludes.each |String $tag, Array $e| {
     file { "${rdbduprunner::config_dir}/rdb-excludes/${tag}":
       owner   => $rdbduprunner::owner,
       group   => $rdbduprunner::group,
-      mode    => '0775',
+      mode    => '0644',
       content => inline_template("<% @e.each do |ln| -%><%= ln %>\n<% end -%>"),
     }
   }
