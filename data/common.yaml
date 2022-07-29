@@ -37,6 +37,6 @@ rdbduprunner::anacron_frequency: 'daily'
 rdbduprunner::cron_resource_name: 'rdbduprunner'
 rdbduprunner::systemd_service_name: 'rdbduprunner'
 rdbduprunner::log_level: 'info'
-rdbduprunner::cmd: 'test -x /usr/bin/keychain && eval $( /usr/bin/keychain --eval --quiet ) ; <%= @executable %> --config <%= @config_file %> --level <%= @log_level %> --notest'
+rdbduprunner::cmd: 'test -x /usr/bin/keychain && eval $( /usr/bin/keychain --eval --quiet ) ; <%= @executable %> --config <%= @config_file %> --level <%= @log_level %> --notest >/dev/null 2>&1'
 rdbduprunner::logrotate: 'present'
 rdbduprunner::purge_excludes: false
