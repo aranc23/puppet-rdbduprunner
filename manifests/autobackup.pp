@@ -54,7 +54,6 @@ define rdbduprunner::autobackup
   Optional[Boolean] $disabled   = undef,
   Variant[String,Undef] $backupdestination = $title,
   Variant[Boolean,Undef] $inventory = true,
-  Variant[Boolean,Undef] $inplace   = undef,
   Variant[String,Undef] $prerun    = undef,
   Variant[String,Undef] $postrun   = undef,
   Array[String] $paths             = [],
