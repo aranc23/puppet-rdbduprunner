@@ -61,6 +61,8 @@ define rdbduprunner::autobackup
   Array[String] $skips             = [ '/var/lib/mysql', '/var/lib/pgsql' ],
   Array[String] $skipres           = [ '^\/run\/media', '^\/var\/lib\/docker\/devicemapper' ],
   Array[String] $excludes          = [],
+  Optional[Boolean] $inplace = undef,
+  Optional[Boolean] $wholefile = false,
 )
 {
   include ::rdbduprunner
@@ -87,6 +89,8 @@ define rdbduprunner::autobackup
     path        => $destination,
     config_file => $config_file,
     concat      => true,
+    inplace     => $inplace,
+    wholefile   => $wholefile,
   }
   $backupset = {
     host              => $host,
