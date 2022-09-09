@@ -27,4 +27,9 @@ if scope[key] then scope[key].each do |v| -%>
 if scope[i.downcase] and not scope[i.downcase].nil? and scope[i.downcase].is_a?(Integer) -%>
   <%= i %> <%= scope[i.downcase].to_s %>
 <% end end -%>
+<% @boolean_vars.sort.each do |i|
+key="rdbduprunner::#{i.downcase}"
+if scope[key] and ( scope[key] == true or scope[key] == false ) -%>
+<%= i %> <%= scope[key].to_s %>
+<% end end -%>
 </BackupSet>

@@ -19,7 +19,7 @@ class rdbduprunner::configure
   $integer_vars = ['MaxInc','MaxProcs','MaxWait']
   $string_vars = ['ZfsBinary','DefaultBackupDestination','DuplicityBinary','RdiffBackupBinary','RsyncBinary','LockFile','ExcludePath','TempDir']
   $array_vars = ['AllowFS']
-  $boolean_vars = ['UseAgent']
+  $boolean_vars = ['UseAgent','Inplace','Checksum','WholeFile']
   concat::fragment { "global options ${rdbduprunner::config_file}":
     target  => $rdbduprunner::config_file,
     content => template('rdbduprunner/global.erb'),

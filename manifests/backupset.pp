@@ -70,6 +70,8 @@ define rdbduprunner::backupset
   Optional[String] $backupdestination = undef,
   Optional[Boolean] $inventory = undef,
   Optional[Boolean] $inplace = undef,
+  Optional[Boolean] $checksum = undef,
+  Optional[Boolean] $wholefile = undef,
   Optional[String] $prerun = undef,
   Optional[String] $postrun = undef,
   Optional[String] $rtag = undef,

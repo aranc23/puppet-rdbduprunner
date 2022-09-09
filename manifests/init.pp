@@ -61,6 +61,15 @@
 # @param maxwait
 #    sets global rdbduprunner parameter of the same name
 #
+# @param inplace
+#    sets global rdbduprunner parameter of the same name
+#
+# @param checksum
+#    sets global rdbduprunner parameter of the same name
+#
+# @param wholefile
+#    sets global rdbduprunner parameter of the same name
+#
 # @param default_skips
 #    adds these to the skips array in backup sets, kind of useless, may be removed
 #
@@ -182,10 +191,15 @@ class rdbduprunner
   Optional[Boolean]     $useagent = undef,
   Optional[String]     $tempdir = undef,
   Optional[Integer]     $maxwait = undef,
+  Optional[Boolean] $inplace = undef,
+  Optional[Boolean] $checksum = undef,
+  Optional[Boolean] $wholefile = undef,
   Hash[String,Struct[{
     zfscreate                => Optional[Boolean],
     zfssnapshot              => Optional[Boolean],
     inplace                  => Optional[Boolean],
+    checksum                 => Optional[Boolean],
+    wholefile                => Optional[Boolean],
     backup_type              => Optional[Enum['rsync','duplicity','rdiff-backup']],
     path                     => String,
     percentused              => Optional[Integer],
@@ -203,6 +217,8 @@ class rdbduprunner
     backupdestination        => Optional[String],
     inventory                => Optional[Boolean],
     inplace                  => Optional[Boolean],
+    checksum                 => Optional[Boolean],
+    wholefile                => Optional[Boolean],
     prerun                   => Optional[String],
     postrun                  => Optional[String],
     rtag                     => Optional[String],
