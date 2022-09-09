@@ -37,7 +37,9 @@
 define rdbduprunner::backupdestination
 (
   String $path,
-  Optional[Boolean]    $inplace = undef,
+  Optional[Boolean] $inplace = undef,
+  Optional[Boolean] $checksum = undef,
+  Optional[Boolean] $wholefile = undef,
   Optional[Boolean]    $zfscreate = undef,
   Optional[Boolean]    $zfssnapshot = undef,
   Enum['rsync','duplicity','rdiff-backup']    $backup_type = 'rsync',
