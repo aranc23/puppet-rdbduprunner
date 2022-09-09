@@ -54,7 +54,7 @@ define rdbduprunner::backupdestination
 {
   $integer_vars = ['PercentUsed','MinFree','MaxInc']
   $string_vars = ['Path']
-  $boolean_vars = ['Inplace','ZfsCreate','ZfsSnapshot']
+  $boolean_vars = ['Inplace','Checksum','WholeFile','ZfsCreate','ZfsSnapshot']
   if $concat {
     concat::fragment { "backupdestination/${title}/${config_file}":
       target  => $config_file,

@@ -81,6 +81,7 @@ define rdbduprunner::backupset
 {
   $integer_vars = ['MaxInc']
   $array_vars = ['Path','Exclude','SkipRE','Skip','AllowFS']
+  $boolean_vars = ['Inplace','Checksum','WholeFile','ZfsCreate','ZfsSnapshot']
   $allowfss = $allowfs
   if $concat {
     concat::fragment { "backupset|${title}|${config_file}":
