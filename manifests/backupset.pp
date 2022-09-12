@@ -24,6 +24,12 @@
 #   sets parameter of the same name in the backupset
 # @param inplace
 #   sets parameter of the same name in the backupset
+# @param checksum
+#   sets parameter of the same name in the backupset
+# @param wholefile
+#   sets parameter of the same name in the backupset
+# @param stats
+#   sets parameter of the same name in the backupset
 # @param prerun
 #   sets parameter of the same name in the backupset
 # @param postrun
@@ -72,6 +78,7 @@ define rdbduprunner::backupset
   Optional[Boolean] $inplace = undef,
   Optional[Boolean] $checksum = undef,
   Optional[Boolean] $wholefile = undef,
+  Optional[Boolean] $stats = undef,
   Optional[String] $prerun = undef,
   Optional[String] $postrun = undef,
   Optional[String] $rtag = undef,
@@ -81,7 +88,7 @@ define rdbduprunner::backupset
 {
   $integer_vars = ['MaxInc']
   $array_vars = ['Path','Exclude','SkipRE','Skip','AllowFS']
-  $boolean_vars = ['Inplace','Checksum','WholeFile','ZfsCreate','ZfsSnapshot']
+  $boolean_vars = ['Inplace','Checksum','WholeFile','Stats','ZfsCreate','ZfsSnapshot']
   $allowfss = $allowfs
   if $concat {
     concat::fragment { "backupset|${title}|${config_file}":

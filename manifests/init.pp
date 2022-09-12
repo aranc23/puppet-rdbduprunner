@@ -194,6 +194,7 @@ class rdbduprunner
   Optional[Boolean] $inplace = undef,
   Optional[Boolean] $checksum = undef,
   Optional[Boolean] $wholefile = undef,
+  Optional[Boolean] $stats = undef,
   Hash[String,Struct[{
     zfscreate                => Optional[Boolean],
     zfssnapshot              => Optional[Boolean],

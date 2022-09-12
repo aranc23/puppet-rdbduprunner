@@ -3,6 +3,12 @@
 #   sets parameter of the same name in the backupdestination
 # @param inplace
 #   sets parameter of the same name in the backupdestination
+# @param checksum
+#   sets parameter of the same name in the backupset
+# @param wholefile
+#   sets parameter of the same name in the backupset
+# @param stats
+#   sets parameter of the same name in the backupset
 # @param zfscreate
 #   sets parameter of the same name in the backupdestination
 # @param zfssnapshot
@@ -40,6 +46,7 @@ define rdbduprunner::backupdestination
   Optional[Boolean] $inplace = undef,
   Optional[Boolean] $checksum = undef,
   Optional[Boolean] $wholefile = undef,
+  Optional[Boolean] $stats = undef,
   Optional[Boolean]    $zfscreate = undef,
   Optional[Boolean]    $zfssnapshot = undef,
   Enum['rsync','duplicity','rdiff-backup']    $backup_type = 'rsync',
@@ -56,7 +63,7 @@ define rdbduprunner::backupdestination
 {
   $integer_vars = ['PercentUsed','MinFree','MaxInc']
   $string_vars = ['Path']
-  $boolean_vars = ['Inplace','Checksum','WholeFile','ZfsCreate','ZfsSnapshot']
+  $boolean_vars = ['Inplace','Checksum','WholeFile','Stats','ZfsCreate','ZfsSnapshot']
   if $concat {
     concat::fragment { "backupdestination/${title}/${config_file}":
       target  => $config_file,
