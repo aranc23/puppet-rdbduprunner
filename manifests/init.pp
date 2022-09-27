@@ -244,7 +244,7 @@ class rdbduprunner
   Enum['debug','info','notice','warning','error','critical','alert','emergency'] $log_level,
   String $cmd,
   String $executable = '/usr/bin/rdbduprunner',
-  Optional[Stdlib::Filesource] $executable_source = 'https://raw.githubusercontent.com/aranc23/rdbduprunner/master/rdbduprunner',
+  Optional[Stdlib::Filesource] $executable_source = 'puppet:///modules/rdbduprunner/rdbduprunner',
   Hash[String,Array[String]] $rsync_tag_excludes = {},
   Hash[String,Array[String]] $rdbdup_tag_excludes = {},
   Enum['present','absent'] $logrotate,
