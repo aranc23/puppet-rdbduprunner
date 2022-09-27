@@ -1,0 +1,2440 @@
+#! /usr/bin/perl
+# Copyright 2020 Aran Cox <arancox@gmail.com>
+
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+use strict;
+use warnings;
+
+#from a standard perl distribution, on UNIX at least
+use English qw( -no_match_vars );
+use File::Basename;
+use Getopt::Long;
+use Fcntl qw(:DEFAULT :flock); # import LOCK_* constants
+use Env qw( HOME );
+use Data::Dumper;
+use POSIX qw( strftime pause );
+use Pod::Usage;
+use POSIX ":sys_wait_h"; # for nonblocking read
+eval { use Time::HiRes qw( time ); };
+use File::Spec;
+use File::Path qw( make_path );
+use Scalar::Util qw/reftype/;
+BEGIN {
+    @AnyDBM_File::ISA = qw(GDBM_File SDBM_File);
+}
+use JSON;
+use AnyDBM_File;
+use Storable qw( freeze thaw );
+
+# added from CPAN or system packages
+use Config::General;
+use Log::Dispatch;
+use Log::Dispatch::Syslog;
+use Log::Dispatch::Screen;
+use Log::Dispatch::File;
+
+# constant name of the application
+my $APP_NAME = 'rdbduprunner';
+
+# print usage and exit
+my $HELP=0;
+
+our $USER = $ENV{LOGNAME} || $ENV{USERNAME} || $ENV{USER} || scalar(getpwuid($<));
+
+# these are command line options, and in some cases config file options
+# the following changes the major mode of operation for rdbduprunner:
+our $AVERAGE=0;
+our $CLEANUP=0;
+our $COMPARE=0;
+our $DRYRUN=0;
+our $CHECKSUM;
+our $WHOLE_FILE; # contains the boolean result --no-whole-file or --whole-file
+our $INPLACE; # hold cli value for inplace
+our $DUMP=0;
+our $LISTOLDEST=0;
+our $REMOVE=0;
+our $STATUS=0;
+our $TIDY=0;
+our $LIST=0;
+our $ORPHANS=0;
+# the following affect what options are passed to rdiff-backup and/or duplicity
+our $FORCE=0;
+our $FULL=0;
+our $MAXAGE;
+our $MAXINC;
+our $STATS; # use to set --stats and other print-stats options
+our $VERBOSITY;
+our $TVERBOSITY;
+our $USEAGENT;
+our $ALLOWSOURCEMISMATCH=0;
+our $TEMPDIR;
+# rsync specific
+my $VERBOSE=0;
+my $PROGRESS=0;
+# the next three options limit which backups get acted upon
+our $DEST;
+our $HOST;
+our $PATH;
+# configuring rdbduprunner:
+our $DUPLICITY_BINARY;
+our $RDIFF_BACKUP_BINARY;
+our $RSYNC_BINARY;
+our $ZFS_BINARY;
+our $EXCLUDE_PATH;
+our $FACILITY='user';
+our $LOG_LEVEL='info';
+my $STATUS_JSON;
+my @STATUS_DELETE;
+our $LOCALHOST;
+my $STATE_DIR =
+    $USER eq 'root'                 ? File::Spec->catfile('/var/lib', $APP_NAME)
+    : exists $ENV{'XDG_STATE_HOME'} ? File::Spec->catfile($ENV{'XDG_STATE_HOME'}, $APP_NAME)
+    : exists $ENV{'HOME'}           ? File::Spec->catfile($ENV{'HOME'}, '.local', 'state', $APP_NAME)
+    : undef;
+my $LOCK_DIR = $USER eq 'root' ? File::Spec->catfile('/var/run',$APP_NAME) : $STATE_DIR;
+my $LOG_DIR = $USER eq 'root' ? File::Spec->catfile('/var/log',$APP_NAME) : $STATE_DIR;
+my $DB_FILE = File::Spec->catfile($STATE_DIR, "${APP_NAME}.db");
+my $DB_LOCK = join('.', $DB_FILE, 'lock');
+# for root log to /var/log directly (for now) for the main log file
+my $LOG_FILE = (
+    $USER eq 'root'
+    ? '/var/log'
+    : $LOG_DIR
+    )
+    . 'rdbduprunner.log-'
+    . strftime( '%Y%m%d', localtime( time() ) );
+# can be overridden from the command line, but not the config
+my $CONFIG_DIR =
+    $USER eq 'root'                  ? File::Spec->catfile('/etc',$APP_NAME)
+    : exists $ENV{'XDG_CONFIG_HOME'} ? File::Spec->catfile($ENV{'XDG_STATE_HOME'}, $APP_NAME)
+    : exists $ENV{'HOME'}            ? File::Spec->catfile($ENV{'HOME'}, '.config', $APP_NAME)
+    : undef;
+
+for my $dir ($STATE_DIR,$CONFIG_DIR,$LOCK_DIR,$LOG_DIR) {
+    unless ( -d $dir ) {
+        my @created;
+        unless ( @created = make_path($dir, { mode => 0700 }) ) {
+            die "unable to create directory: ${dir}";
+        }
+        unless (string_any($dir,@created)) {
+            warn @created;
+            die "make_path did not return the expected result trying to create ${dir}";
+        }
+    }
+}
+
+my $CONFIG_FILE;
+my @CONFIG_FILES =
+    $USER eq 'root'
+    ? ( "${HOME}/.rdbduprunner.rc",
+        "/etc/rdbduprunner.rc",
+        "${CONFIG_DIR}/rdbduprunner.conf",
+    )
+    : ( "${HOME}/.rdbduprunner.rc",
+        "${CONFIG_DIR}/config",
+    );
+
+our $TEST=1;
+my $MAXPROCS;
+my $MAXWAIT; # sleep no longer than this value (in seconds)
+my %children; # store children for master backup loop
+my $RUNTIME; # storing the start time so we can calculate run time
+
+
+my @SKIP_FS=qw(
+                autofs
+                binfmt_misc
+                bpf
+                cgroup
+                cgroup2
+                cifs
+                configfs
+                debugfs
+                devpts
+                devtmpfs
+                efivarfs
+                exfat
+                fuse
+                fuse.encfs
+                fuse.glusterfs
+                fuse.gvfs-fuse-daemon
+                fuse.gvfsd-fuse
+                fuse.lxcfs
+                fuse.portal
+                fuse.sshfs
+                fuse.vmware-vmblock
+                fuse.xrdp-chansrv
+                fuseblk
+                fusectl
+                htfs
+                hugetlbfs
+                ipathfs
+                iso9660
+                mqueue
+                nfs
+                nfs4
+                nfsd
+                nsfs
+                ntfs
+                proc
+                pstore
+                rootfs
+                rpc_pipefs
+                securityfs
+                selinuxfs
+                squashfs
+                sysfs
+                tmpfs
+                tracefs
+                usbfs
+                vfat
+                zfs
+             );
+my $SKIP_FS_REGEX;
+my @ALLOW_FS;
+
+# from the man page for rsync 3.1.1
+my $EXIT_CODE={
+               'rsync' => {
+                           '0' => 'Success',
+                           '1' => 'Syntax or usage error',
+                           '2' => 'Protocol incompatibility',
+                           '3' => 'Errors selecting input/output files, dirs',
+                           '4' => 'Requested  action  not  supported',
+                           '5' => 'Error starting client-server protocol',
+                           '6' => 'Daemon unable to append to log-file',
+                           '10' => 'Error in socket I/O  Error in file I/O',
+                           '11' => 'Error in file I/O',
+                           '12' => 'Error in rsync protocol data stream',
+                           '13' => 'Errors with program diagnostics',
+                           '14' => 'Error in IPC code',
+                           '20' => 'Received SIGUSR1 or SIGINT',
+                           '21' => 'Some error returned by waitpid()',
+                           '22' => 'Error allocating core memory buffers',
+                           '23' => 'Partial transfer due to error',
+                           '24' => 'Partial transfer due to vanished source files',
+                           '25' => 'The --max-delete limit stopped deletions',
+                           '30' => 'Timeout in data send/receive',
+                           '35' => 'Timeout waiting for daemon connection',
+                          },
+              };
+
+# read the config file into this hash:
+our %CONFIG;
+# create this list of hashes, with each one corresponding to an
+# invocation of a backup program that needs to be run:
+our @BACKUPS;
+# dispatcher needs a handle to write to:
+our $DISPATCHER;
+our @INCREMENTS;
+
+my %option_mappings=
+  (
+   # config file string
+   'wholefile' =>
+   {
+    'cli'       => 'whole-file|wholefile!',
+    'var'       => \$WHOLE_FILE,
+    'normalize' => \&bool_parse,
+   },
+   # on Sundays, the default for inplace is false, and true the rest of the week
+   'inplace' =>
+   {
+    'cli'       => 'inplace!',
+    'var'       => \$INPLACE,
+    'def'       => strftime('%w',localtime(time())) == 0 ? 0 : 1,
+    'normalize' => \&bool_parse,
+   },
+   # use checksum, but don't please
+   'checksum' =>
+   {
+    'cli'       => 'c|checksum!',
+    'var'       => \$CHECKSUM,
+    'def'       => 0,
+    'normalize' => \&bool_parse,
+   },
+   # print stats, probably always want this if possible
+   'stats' =>
+   {
+    'cli'       => 'stats!',
+    'var'       => \$STATS,
+    'def'       => 1,
+    'normalize' => \&bool_parse,
+   },
+  );
+my %get_options=
+  (
+   # show usage
+   'h|help'                 => \$HELP,
+   # can be overridden from the command line, but not the config
+   'config=s'               => \$CONFIG_FILE, # config file
+
+   # the following changes the major mode of operation for rdbduprunner:
+   'calculate-average'      => \$AVERAGE,
+   'cleanup'                => \$CLEANUP,
+   'check'                  => \$CLEANUP,
+   'compare'                => \$COMPARE,
+   'verify'                 => \$COMPARE,
+   'dump'                   => \$DUMP,
+   'list-oldest'            => \$LISTOLDEST,
+   'remove-oldest'          => \$REMOVE,
+   'status'                 => \$STATUS,
+   'tidy'                   => \$TIDY,
+   'list'                   => \$LIST,
+   'orphans'                => \$ORPHANS,
+   # maintain the status database:
+   'status_json|status-json!'       => \$STATUS_JSON,
+   'status_delete|status-delete=s@' => \@STATUS_DELETE,
+   # the following affect what options are passed to rdiff-backup and/or duplicity
+   'force!'                 => \$FORCE,
+   'full'                   => \$FULL,
+   'maxage=s'               => \$MAXAGE,
+   'maxinc=s'               => \$MAXINC,
+   'verbosity=i'            => \$VERBOSITY,
+   't|terminal-verbosity=i' => \$TVERBOSITY,
+   'u|use-agent!'           => \$USEAGENT,
+   'allow-source-mismatch!' => \$ALLOWSOURCEMISMATCH,
+   'tempdir=s'              => \$TEMPDIR,
+
+   # rsync specific options
+   'v|verbose'              => \$VERBOSE,
+   'progress!'              => \$PROGRESS,
+   'n|dry-run'              => \$DRYRUN,
+   # options with applicbility to rdiff-backup, duplicity and rsync
+   'stats!'                 => \$STATS,
+
+   # the next three options limit which backups get acted upon
+   'dest=s'                 => \$DEST,
+   'host=s'                 => \$HOST,
+   'path=s'                 => \$PATH,
+
+   # configuring rdbduprunner:
+   'duplicity-binary=s'     => \$DUPLICITY_BINARY,
+   'rdiff-backup-binary=s'  => \$RDIFF_BACKUP_BINARY,
+   'rsync-binary=s'         => \$RSYNC_BINARY,
+   'zfs-binary=s'           => \$ZFS_BINARY,
+   'exclude-path=s'         => \$EXCLUDE_PATH,
+   'facility=s'             => \$FACILITY,
+   'level=s'                => \$LOG_LEVEL,
+   'localhost=s'            => \$LOCALHOST,
+   'lockdir=s'              => \$LOCK_DIR,
+   'test!'                  => \$TEST,
+   'skipfs=s'               => \@SKIP_FS,
+   'allowfs=s'              => \@ALLOW_FS,
+   'maxprocs=i'             => \$MAXPROCS,
+   'maxwait=i'              => \$MAXWAIT,
+  );
+
+# push the options onto the big get_options hash for passing to GetOptions
+foreach my $key (keys(%option_mappings)) {
+  my $o=$option_mappings{$key};
+  $get_options{$$o{'cli'}} = $$o{'var'};
+}
+
+GetOptions(%get_options);
+
+# print the SYNOPSIS section and exit
+pod2usage(-1) if $HELP;
+
+if(not defined $LOCALHOST) {
+  if(defined $CONFIG{localhost}) {
+    $LOCALHOST=$CONFIG{localhost};
+  } else {
+    $LOCALHOST=`hostname`;
+    chomp $LOCALHOST;
+    my @a=split(/\./,$LOCALHOST);
+    @a > 1 and $LOCALHOST=$a[0];
+  }
+}
+
+my $callback_clean = sub { my %t=@_;
+                           chomp $t{message};
+                           return $t{message}."\n"; # add a newline
+                         };
+
+create_dispatcher();
+$RUNTIME=time();
+dlog('info','starting',{});
+
+unless ( $CONFIG_FILE ) {
+ FILE:
+    foreach my $c (@CONFIG_FILES) {
+        # loop through the candidates, choose the first existing one
+        if ( -f $c ) {
+            $CONFIG_FILE = $c;
+            last FILE;
+        }
+    }
+}
+unless( $CONFIG_FILE and -f $CONFIG_FILE ) {
+    my $msg= "no config files found in any locations, unable to continue!";
+    critical($msg);
+    die $msg;
+}
+%CONFIG=new Config::General(-ConfigFile => $CONFIG_FILE,
+			    -IncludeGlob => 1,
+			    -AutoTrue => 1,
+			    -LowerCaseNames => 1)->getall() or die "unable to parse $CONFIG_FILE";
+if($DUMP) {
+  print Dumper \%CONFIG;
+}
+# set some global options using the config file global options???
+if(not defined $DUPLICITY_BINARY) {
+    if(defined $CONFIG{duplicitybinary}) {
+	$DUPLICITY_BINARY=$CONFIG{duplicitybinary};
+    } else {
+	$DUPLICITY_BINARY='duplicity'; # in our path we hope
+    }
+}
+
+if(not defined $RDIFF_BACKUP_BINARY) {
+    if(defined $CONFIG{rdiffbackupbinary}) {
+	$RDIFF_BACKUP_BINARY=$CONFIG{rdiffbackupbinary};
+    } else {
+	$RDIFF_BACKUP_BINARY='rdiff-backup'; # in our path we hope
+    }
+}
+
+if(not defined $RSYNC_BINARY) {
+  if(defined $CONFIG{rsyncbinary}) {
+	$RSYNC_BINARY=$CONFIG{rsyncbinary};
+  } else {
+	$RSYNC_BINARY='rsync'; # in our path we hope
+  }
+}
+
+if(not defined $ZFS_BINARY) {
+  if(defined $CONFIG{zfsbinary}) {
+	$ZFS_BINARY=$CONFIG{zfsbinary};
+  } else {
+	$ZFS_BINARY='zfs'; # in our path we hope
+  }
+}
+
+unless(defined $VERBOSITY) { # from the command line
+  if(defined $CONFIG{verbosity}) {
+    $VERBOSITY=$CONFIG{verbosity};
+  }
+}
+
+unless(defined $TVERBOSITY) { # from the command line
+  if(defined $CONFIG{terminalverbosity}) {
+    $TVERBOSITY=$CONFIG{terminalverbosity};
+  }
+}
+
+if(defined $CONFIG{allowfs}) {
+  @ALLOW_FS = ref($CONFIG{allowfs}) eq "ARRAY" ? @{$CONFIG{allowfs}} : ($CONFIG{allowfs} );
+}
+
+if(defined $EXCLUDE_PATH) {
+  # leave it alone, it comes from the command line
+} elsif(defined $CONFIG{excludepath}) {
+  $EXCLUDE_PATH=$CONFIG{excludepath};
+} else {
+  $EXCLUDE_PATH='/etc/rdbduprunner';
+}
+
+if(not defined $USEAGENT) {
+  if(defined $CONFIG{useagent}) {
+    $USEAGENT=1;
+  } else {
+    $USEAGENT=0;
+  }
+}
+
+if(not defined $TEMPDIR) {
+  if(defined $CONFIG{tempdir}) {
+    $TEMPDIR=$CONFIG{tempdir};
+  }
+}
+
+if(not defined $MAXPROCS) {
+    if(defined $CONFIG{maxprocs}) {
+	$MAXPROCS=$CONFIG{maxprocs};
+    } else {
+	$MAXPROCS=1;
+    }
+}
+
+if(not defined $MAXWAIT) {
+    if(defined $CONFIG{maxwait}) {
+	$MAXWAIT=$CONFIG{maxwait};
+    } else {
+	$MAXWAIT=86400; # one day's worth of seconds
+    }
+}
+
+# combine the list of filesystems to skip into a regex
+$SKIP_FS_REGEX='^('.join('|',map(quotemeta,@SKIP_FS)).')$';
+
+dlog('debug','config',\%CONFIG,{'config_file' => $CONFIG_FILE});
+
+if ( @STATUS_DELETE and scalar @STATUS_DELETE > 0 ) {
+    status_delete(@STATUS_DELETE);
+    exit;
+}
+elsif ( basename($PROGRAM_NAME) eq 'check_rdbduprunner' or $STATUS_JSON ) {
+    status_json();
+    exit;
+}
+
+@BACKUPS = parse_config_backups();
+if($DUMP) {
+  print Dumper \@BACKUPS;
+  notice("you asked me to dump and exit!");
+  exit(0);
+}
+
+if($STATUS) {
+  foreach my $bh (sort backup_sort (@BACKUPS)) {
+    my @com;
+    if($$bh{btype} eq 'duplicity') {
+      @com=($DUPLICITY_BINARY,'collection-status');
+      $USEAGENT and push(@com,'--use-agent');
+    } elsif($$bh{btype} eq 'rdiff-backup') {
+      @com=($RDIFF_BACKUP_BINARY,'--list-increment-sizes');
+    } elsif($$bh{btype} eq 'rsync') {
+      @com=('du','-cshx');
+    }
+    unless($$bh{btype} eq 'rsync') {
+      push(@com,verbargs($bh));
+
+    }
+    push(@com,$$bh{dest});
+    info(join(" ",@com));
+    unless($TEST) {
+      my $lock=lock_pid_file($$bh{host});
+      set_env($bh);
+      system(@com);
+      unless($? == 0) {
+        error('unable to execute '.$com[0].'!');
+      }
+      unlock_pid_file($lock);
+    }
+  }
+} elsif($LISTOLDEST) {
+    build_increment_list();
+    foreach my $ih (sort { $$a{inctime} <=> $$b{inctime} } (@INCREMENTS)) {
+        print localtime($$ih{inctime}).' '.$$ih{bh}{dest}.' '.$$ih{tag}."\n";
+    }
+} elsif($REMOVE) {
+    build_increment_list();
+    remove_oldest('any');
+}
+elsif($ORPHANS) {
+  foreach my $bh (sort backup_sort (@BACKUPS)) {
+    if($$bh{btype} eq 'rdiff-backup') {
+      my @com=('find',$$bh{dest},'-type','f','-name','rdiff-backup.tmp.*');
+      info(join(" ",@com));
+      system(@com);
+    }
+  }
+} elsif($CLEANUP) {
+    foreach my $bh (sort backup_sort (@BACKUPS)) {
+        my @com;
+        if($$bh{btype} eq 'duplicity') {
+            push(@com,$DUPLICITY_BINARY,'cleanup');
+            $USEAGENT and push(@com,'--use-agent');
+            if($FORCE) {
+                push(@com,'--force');
+            }
+        } elsif($$bh{btype} eq 'rdiff-backup') {
+            push(@com,$RDIFF_BACKUP_BINARY,'--check-destination-dir');
+        }
+        else {
+          warn("cleanup function only implmented for duplicity and rdiff-backup");
+          next;
+        }
+        if(defined $TEMPDIR) {
+          if(-d $TEMPDIR) {
+            if($$bh{btype} eq 'rsync') {
+              push(@com,"--temp-dir=$TEMPDIR");
+            } else {
+              push(@com,'--tempdir',$TEMPDIR);
+            }
+          } else {
+            warn("specified temporary directory does not exist, not using it");
+          }
+        }
+        push(@com,verbargs($bh),
+             $$bh{dest});
+        info(join(" ",@com));
+        unless($TEST) {
+            my $lock=lock_pid_file($$bh{host});
+            set_env($bh);
+            system(@com);
+            unless($? == 0) {
+                error("unable to execute $$bh{btype}!");
+            }
+            unlock_pid_file($lock);
+        }
+    }
+} elsif ($TIDY) {
+    foreach my $bh (sort backup_sort (@BACKUPS)) {
+      my $lock;
+      unless($TEST) {
+	$lock=lock_pid_file($$bh{host});
+      }
+        tidy($bh);
+      unless($TEST) {
+	unlock_pid_file($lock);
+      }
+    }
+} elsif($AVERAGE) {
+    my $avcom="$RDIFF_BACKUP_BINARY --calculate-average";
+    foreach my $bh (sort backup_sort (@BACKUPS)) {
+        unless($$bh{btype} eq 'rdiff-backup') {
+          warn("average function only applies to rdiff-backup type backupes");
+            next;
+        }
+        $avcom.=" $$bh{dest}/rdiff-backup-data/session_statistics.*.data";
+    }
+    exec($avcom);
+} elsif($COMPARE) {
+  foreach my $bh (sort backup_sort (@BACKUPS)) {
+    my @com;
+    if ($$bh{btype} eq 'duplicity') {
+      @com=($DUPLICITY_BINARY,'verify');
+      $USEAGENT and push(@com,'--use-agent');
+    }
+    elsif($$bh{btype} eq 'rdiff-backup') {
+      @com=($RDIFF_BACKUP_BINARY,'--compare','--no-eas');
+    }
+    else {
+      warn("verify function not implemented for rsync backups");
+      next;
+    }
+    push(@com,verbargs($bh),'--exclude-other-filesystems');
+    foreach my $f (@{$$bh{excludes}}) {
+      push(@com,'--exclude-globbing-filelist',
+	   $f);
+    }
+    if ($$bh{btype} eq 'duplicity') {
+      push(@com,$$bh{dest},$$bh{path});
+    } else {
+      unless($$bh{sshcompress}) {
+	push(@com,'--ssh-no-compression');
+      }
+      push(@com,'--exclude-device-files',$$bh{src},$$bh{dest});
+    }
+	
+    info(join(" ",@com));
+    unless($TEST) {
+      my $lock=lock_pid_file($$bh{host});
+      set_env($bh);
+      system(@com);
+      my $mainret=$?;
+      unless($mainret == 0) {
+	error("$$bh{btype} exited with an error");
+      }
+      unlock_pid_file($lock);
+    }
+  }
+} elsif($LIST) {
+  foreach my $bh (sort backup_sort (@BACKUPS)) {
+    my @com;
+    unless($$bh{btype} eq 'duplicity') {
+      warn("list function only applies to duplicity type backups");
+      next;
+    }
+    @com=($DUPLICITY_BINARY,'list-current-files');
+    $USEAGENT and push(@com,'--use-agent');
+    push(@com,verbargs($bh));
+    push(@com,$$bh{dest});
+    info(join(" ",@com));
+    unless($TEST) {
+      my $lock=lock_pid_file($$bh{host});
+      set_env($bh);
+      system(@com);
+      unless($? == 0) {
+        error('unable to execute '.$com[0].'!');
+      }
+      unlock_pid_file($lock);
+    }
+  }
+} else {
+  # here we will eventually just perform the backups
+  # first we check for space on rdiff-backup destinations and free some up,
+  # before forking away in perform_backups
+  foreach my $bh (@BACKUPS) {
+    if($$bh{btype} eq 'rdiff-backup') {
+      if($$bh{dest} =~ /\:\:/) {
+        info("we are assuming the destination $$bh{dest} is remote and will not attempt to manage it's disk space");
+      } else {
+        while(1) {
+          my $ans=check_space($$bh{backupdestination});
+          if($ans == -1) {
+            error("unable to determine if this backupdestination ($$bh{backupdestination}) has enough free space");
+            error("no backups to this backupdestination will be attempted and this message will be repeated only once");
+            $CONFIG{$$bh{backupdestination}}{busted}=1;
+            next BACKUP;
+          } elsif($ans == 0) {
+            unless(remove_oldest($$bh{backupdestination})) {
+              # we failed to remove an increment from the backupdestination
+              # we cannot do backups on this bd for this run!
+              warning("unable to remove an increment on backupdestination ($$bh{backupdestination}:$CONFIG{backupdestination}{$$bh{backupdestination}}{path})");
+              warning("no further attempts will be made to do backups to this destination");
+              $CONFIG{$$bh{backupdestination}}{busted}=1;
+              next BACKUP;
+            }
+            # we can just fall out now and let check_space() run again to see if it helped
+          } elsif($ans == 1) {
+            # we have enough space to proceed
+            last;
+          }
+        }
+      }
+    }
+  }
+  perform_backups(@BACKUPS);
+}
+
+dlog('info',
+     'exiting',
+     {'total_run_time_seconds' => time()-$RUNTIME});
+
+#sub check_
+sub build_backup_command {
+  my $bh=shift;
+  my @com;
+  if($$bh{disabled}) {
+    dlog('notice','disabled backup',$bh);
+    # skip disabled backups
+    return;
+  }
+
+  if($$bh{btype} eq 'duplicity' and not -d $$bh{path}) {
+    dlog('warning','path does not exist',$bh);
+    warning("backup path $$bh{path} does not exist for $$bh{tag}: skipping this backup");
+    return;
+  }
+
+  if(defined $CONFIG{$$bh{backupdestination}}{busted} and $CONFIG{$$bh{backupdestination}}{busted}) {
+    # I guess this is a way to mark a backupdestination as unavailable
+    dlog('notice','backupdestination busted',$$bh{backupdestination});
+    return;
+  }
+
+  if($$bh{btype} eq 'duplicity') {
+    @com=($DUPLICITY_BINARY);
+    $FULL and push(@com,'full');
+    $USEAGENT and push(@com,'--use-agent');
+    $ALLOWSOURCEMISMATCH and push(@com,'--allow-source-mismatch');
+    if(defined $$bh{signkey}) {
+      push(@com,'--sign-key',$$bh{signkey});
+    }
+    if(defined $$bh{encryptkey}) {
+      push(@com,'--encrypt-key',$$bh{encryptkey});
+    }
+    unless($$bh{stats}) {
+      push(@com,'--no-print-statistics');
+    }
+    push(@com,'--exclude-other-filesystems');
+  } elsif($$bh{btype} eq 'rdiff-backup') { # must be rdiff-backup
+    @com=($RDIFF_BACKUP_BINARY,
+          '--exclude-device-files',
+          '--exclude-other-filesystems',
+          '--no-eas',
+         );
+    unless($$bh{sshcompress}) {
+      push(@com,'--ssh-no-compression');
+    }
+    if($$bh{stats}) {
+      push(@com,'--print-statistics');
+    }
+  } elsif($$bh{btype} eq 'rsync') {
+    @com=($RSYNC_BINARY,
+          '--archive',
+          '--one-file-system',
+          '--hard-links',
+          '--delete',
+          '--delete-excluded',
+         );
+    # here is the where the rubbger meets the robe:
+    if( defined $$bh{wholefile} ) {
+      push(@com, $$bh{wholefile} ? '--whole-file' : '--no-whole-file');
+    }
+    if($DRYRUN) {
+      push(@com,'--dry-run');
+    }
+    if($$bh{checksum}) {
+      push(@com,'--checksum');
+    }
+    if(defined $$bh{'inplace'} and $$bh{'inplace'}) {
+      push(@com,'--inplace','--partial');
+    }
+    else {
+      push(@com,'--sparse');
+    }
+    if(defined $$bh{trickle} and $$bh{trickle} =~ /^\d+$/) {
+      push(@com,"--bwlimit=$$bh{trickle}");
+    }
+    if($$bh{sshcompress}) {
+      push(@com,'-z');
+    }
+    if($$bh{stats}) {
+      push(@com,'--stats');
+    }
+    # use logging
+    push(@com,'--log-file='.$LOG_DIR.'/'.$$bh{tag}.'.log')
+  }
+  if(defined $TEMPDIR) {
+    if(-d $TEMPDIR) {
+      if($$bh{btype} eq 'rsync') {
+        push(@com,"--temp-dir=$TEMPDIR");
+      } else {
+        push(@com,'--tempdir',$TEMPDIR);
+      }
+    } else {
+      warn("specified temporary directory does not exist, not using it");
+    }
+  }
+  unshift(@com,shift @com,verbargs($bh));
+
+  foreach my $f (@{$$bh{excludes}}) {
+    if($$bh{btype} eq 'rsync') {
+      push(@com,"--exclude-from=$f");
+    } else { # rdiff-backup and duplicity
+      push(@com,'--exclude-globbing-filelist',
+           $f);
+    }
+  }
+  foreach my $x (@{$$bh{exclude}}) {
+    push(@com,'--exclude',$x);
+  }
+  push(@com,$$bh{src},$$bh{dest});
+
+  # if Trickle is set for a destination, use the trickle binary to slow upload rates to the value given
+  if(defined $$bh{trickle} and $$bh{trickle} =~ /^\d+$/ and $$bh{btype} ne 'rsync') {
+    unshift(@com,'/usr/bin/trickle','-s','-u',$$bh{trickle});
+  }
+  return @com;
+}
+
+sub hash_backups {
+  my %h;
+  foreach my $bh (@_) {
+    push(@{$h{$$bh{host}}},$bh);
+  }
+  return %h;
+}
+
+sub perform_backups {
+  my %BACKUPS = hash_backups(@_);
+  # $SIG{USR1} = sub {
+  #   debug(Dumper \%BACKUPS);
+  #   debug(Dumper \%children);
+  # };
+  #delete $SIG{USR1};
+  #delete $SIG{USR2};
+  #delete $SIG{HUP};
+  $SIG{CHLD} = sub {
+    # don't change $! and $? outside handler
+    local ($!, $?);
+    while ( (my $pid = waitpid(-1, WNOHANG)) > 0 ) {
+      debug("waitpid returned child ${pid}");
+      delete $children{$pid};
+    }
+  };
+  do {
+    while ( (my $pid = waitpid(-1, WNOHANG)) > 0 ) {
+      debug("waitpid returned child ${pid}");
+      delete $children{$pid};
+    }
+    while ( scalar(keys(%children)) < $MAXPROCS and scalar(keys(%BACKUPS)) > 0 ) {
+      my $host=(keys %BACKUPS)[0];
+      my $list=$BACKUPS{$host};
+      debug("about to spawn sub-process for ${host}");
+      delete $BACKUPS{$host};
+      my $pid=fork();
+      if ($pid == 0) {
+        #delete $SIG{USR1};
+        delete $SIG{CHLD};
+        perform_backup($host,@{$list});
+        critical('perform_backup should never return');
+        exit;
+      } elsif ($pid > 0) {
+        debug("added child to children hash: ${pid}");
+        $children{$pid}=$list;
+      }
+    }
+    if (scalar(keys(%children)) > 0) {
+      debug('waiting on '.(scalar(keys(%children))).' sub-processes to exit, '.scalar(keys(%BACKUPS)).' more children to spawn, pausing');
+      my $pause_start=time();
+      pause;
+      debug("paused for: ".sprintf('%.2f seconds',time()-$pause_start));
+    }
+  } until scalar(keys(%children)) == 0 and scalar(keys(%BACKUPS)) == 0
+}
+
+sub perform_backup {
+  my $host=shift;
+  create_dispatcher();    # to set the pid, may not work correctly
+  my $lock1;
+  # store the results of each backup in this hash:
+  # like { '/var', 'failure', 1684884888 )
+  unless($TEST) {
+    unless ($lock1=lock_pid_file($host)) {
+      dlog('error','lock failure',$_[0]);
+      exit;
+    }
+  }
+ BACKUP:
+  foreach my $bh (sort backup_sort (@_)) {
+    foreach my $key (qw( src dest tag path host ) ) {
+      if ( exists $$bh{$key} ) {
+        $ENV{'RDBDUPRUNNER_BACKUP_'.uc($key)}=$$bh{$key};
+      }
+      elsif ( exists $ENV{'RDBDUPRUNNER_BACKUP_'.uc($key)} ) {
+        delete $ENV{'RDBDUPRUNNER_BACKUP_'.uc($key)};
+      }
+    }
+    if(exists $CONFIG{$$bh{backupdestination}}{busted} and $CONFIG{$$bh{backupdestination}}{busted} == 1) {
+      dlog('notice','skipping backup due to busted destination',$bh);
+      next;
+    }
+    push(@{$$bh{com}},build_backup_command($bh));
+    unless (@{$$bh{com}} > 0) {
+      dlog('debug','empty backup command',$bh);
+      next BACKUP;
+    }
+    if (defined $$bh{zfscreate} and bool_parse($$bh{zfscreate}) == 1 and not $DRYRUN) {
+      # this seems messy, but we want the parent dir of the real destination
+      my @all_dirs = File::Spec->splitdir( $$bh{'dest'} );
+      my $zfs_child = pop @all_dirs;
+      my $zfs_parent = File::Spec->catdir( @all_dirs );
+      if(-d $$bh{'dest'}) {
+        debug("skipping zfs creation, directory exists: ".$$bh{'dest'});
+      }
+      elsif(my $zfs=which_zfs($zfs_parent)) {
+        my @com=($ZFS_BINARY,
+                 'create',
+                 "${zfs}/${zfs_child}",
+                );
+        info(join(' ',@com));
+        unless($TEST) {
+          set_env($bh);
+          system(@com);
+          unless($? == 0) {
+            # if we failed to run the pre-run, issue the final summary based on that
+            error("unable to execute zfs create command as requested: skipping backup!");
+            update_status_db(
+                $$bh{src},
+                {   'phase' => 'zfscreate',
+                    'exit'  => POSIX::WEXITSTATUS($CHILD_ERROR),
+                    'time'  => time(),
+                }
+            ) unless $TEST;
+            log_exit_status($bh,$?);
+            next BACKUP;
+          }
+        }
+      }
+      else {
+        my $msg = "unable to execute zfs create command as requested: skipping backup!";
+        error( $msg );
+        update_status_db(
+            $$bh{src},
+            {   'phase' => 'zfscreate',
+                'exit'  => -1,
+                'errno' => $msg,
+                'time'  => time(),
+            }
+        ) unless $TEST;
+        log_exit_status( $bh, $? );
+        next;
+      }
+    }
+    if (defined $$bh{prerun} and not $DRYRUN) {
+      info($$bh{prerun});
+      unless($TEST) {
+        set_env($bh);
+        system($$bh{prerun});
+        unless ( $? == 0 ) {
+            # if we failed to run the pre-run, issue the final summary based on that
+            my $msg = "unable to execute prerun command: skipping backup!";
+            error($msg);
+            update_status_db(
+                $$bh{src},
+                {   'phase' => 'prerun',
+                    'exit'  => POSIX::WEXITSTATUS($CHILD_ERROR),
+                    'errno' => $msg,
+                    'time'  => time(),
+                }
+            ) unless $TEST;
+            log_exit_status( $bh, $? );
+            next;
+        }
+      }
+    }
+    info(join(" ",@{$$bh{com}}));
+    my $mainret=0;
+    unless($TEST) {
+      set_env($bh);
+      $$bh{runtime}=time();
+      system(@{$$bh{com}});
+      $mainret=$?;
+      $$bh{runtime}=time()-$$bh{runtime};
+      # in order to look up useful return code values for rsync you have to divide by 256
+      # however, it doesn't always return a code evenly divisble by 256 so we need to check first
+      if ($$bh{btype} eq 'rsync' and $mainret % 256 == 0) {
+        $mainret=($mainret/256);
+      }
+      if (defined $$EXIT_CODE{$$bh{btype}}{$mainret}) {
+        $$bh{'exit_code'}=$$EXIT_CODE{$$bh{btype}}{$mainret};
+      }
+      unless($mainret == 0) {
+        error("unable to execute $$bh{btype}!");
+      }
+    }
+    # if there is no postrun, return the log_exit_status using $mainret
+    # if there is a postrun, return that value instead regardless of failure
+    if (defined $$bh{postrun} and not $DRYRUN) {
+      info($$bh{postrun});
+      unless($TEST) {
+        set_env($bh);
+        system( $$bh{postrun} );
+        unless ( $? == 0 ) {
+            my $msg = "postrun command exited with an error";
+            error($msg);
+
+            # issue final summary based on the return value of the postrun command
+            update_status_db(
+                $$bh{src},
+                {   'phase' => 'postrun',
+                    'exit'  => POSIX::WEXITSTATUS($CHILD_ERROR),
+                    'errno' => $msg,
+                    'time'  => time(),
+                }
+            ) unless $TEST;
+            log_exit_status( $bh, $? );
+            next;
+        }
+      }
+    }
+    # attempt to create a snapshot of the destination filesystem
+    if (defined $$bh{zfssnapshot} and bool_parse($$bh{zfssnapshot}) == 1 and not $DRYRUN) {
+      # zfs is path minus leading /
+      if(my $zfs = find_zfs($$bh{'dest'})) {
+        # snapshot is zfs plus a name
+        my $snap=$zfs.'@rdbduprunner-'.( $mainret == 0 ? 'success-' : 'failure-').strftime("%FT%T%z",localtime());
+        # snapshot commmand is straightforward
+        my @com=($ZFS_BINARY,
+                 'snapshot',
+                 $snap);
+        info(join(' ',@com));
+        unless($TEST) {
+          set_env($bh);
+          # execute snapshot command
+          system(@com);
+          unless($? == 0) {
+            error("zfs snapshot command exited with an error, this is not fatal: $?");
+          }
+        }
+      }
+      else {
+        debug('skipping zfs snapshot, destination is not a zfs');
+      }
+    }
+    # issue final summary based on the main backup process
+    update_status_db(
+        $$bh{src},
+        {   'phase'   => 'backup',
+            'exit'    => $mainret,
+            'errno'   => exists $$bh{exit_code} ? $$bh{exit_code} : 'backup failed',
+            'time'    => time(),
+            'runtime' => $$bh{runtime},
+        }
+    ) unless $TEST;
+    log_exit_status($bh,$mainret) unless $TEST;
+  }
+  exit;
+}
+sub lock_db {
+    my $flags = shift;
+    $flags = LOCK_EX unless $flags;
+    my $db_lock_handle;
+
+    unless ( open($db_lock_handle, '>', $DB_LOCK) ) {
+        error("unable to open database file ${DB_LOCK}");
+        return;
+    }
+    unless ( flock( $db_lock_handle, LOCK_EX ) ) {
+        error("unable to lock database file ${DB_LOCK}");
+        return;
+    }
+    return $db_lock_handle;
+}
+
+sub unlock_db {
+    flock($_[0],LOCK_UN);
+    close($_[0]);
+}
+
+# update the state database
+sub update_status_db {
+    my ($src, $hash) = @_;
+    my $db_file = File::Spec->catfile($STATE_DIR, "${APP_NAME}.db");
+    my $db_lock_file = "${db_file}.lock";
+
+    my $db_lock_handle = lock_db();
+
+    my %status;
+    unless(tie %status, 'AnyDBM_File', $db_file, O_CREAT|O_RDWR, 0666) {
+        error("unable to open database file ${db_file}");
+        return;
+    }
+
+    if ( exists $status{$src} and ref thaw($status{$src}) eq 'HASH') {
+        my $h = thaw($status{$src});
+        while( my ($k,$v) = each(%$hash) ) {
+            $$h{$k} = $v;
+        }
+        $status{$src} = freeze($h);
+    }
+    else {
+        $status{$src} = freeze($hash);
+    }
+    untie %status;
+    unlock_db($db_lock_handle);
+}
+
+sub status_delete {
+    my $h = lock_db(LOCK_EX);
+
+    my %status;
+    unless( -f $DB_FILE ) {
+        return;
+    }
+    unless(tie %status, 'AnyDBM_File', $DB_FILE, O_RDWR, 0666) {
+        error("unable to open database file ${DB_FILE} for deletions");
+        return;
+    }
+
+    for my $k (@_) {
+        delete $status{$k} if exists $status{$k};
+    }
+
+    untie %status;
+    unlock_db($h);
+}
+
+sub status_json {
+    my $h = lock_db(LOCK_SH);
+
+    my %status;
+    unless( -f $DB_FILE ) {
+        return;
+    }
+    unless(tie %status, 'AnyDBM_File', $DB_FILE, O_RDONLY, 0666) {
+        error("unable to open database file ${DB_FILE} for reading");
+        return;
+    }
+
+    my %json;
+    while(my ($k,$v)=each(%status)) {
+        $json{$k}=thaw($v);
+    }
+    my $json = JSON->new->pretty();
+    print $json->encode(\%json);
+    untie %status;
+    unlock_db($h);
+}
+
+sub backup_sort {
+  my @sortorder=qw( tag host backupdestination );
+
+  unless(defined $$a{priority}) {
+    $$a{priority}=(defined $$a{priority} ? $$a{priority} : 0);
+  }
+  unless(defined $$b{priority}) {
+    $$b{priority}=(defined $$b{priority} ? $$b{priority} : 0);
+  }
+  if($$a{priority} != $$b{priority}) {
+    return $$a{priority} <=> $$b{priority};
+  }
+  foreach my $parm (@sortorder) {
+    if($$a{$parm} ne $$b{$parm}) {
+      return $$a{$parm} cmp $$b{$parm};
+    }
+  }
+  # somehow, all the paramaters are equal, so just return 0
+  return 0;
+}
+
+sub lock_file_compose {
+  return sprintf('%s/%s.lock',$LOCK_DIR,$_[0]);
+}
+
+sub lock_pid_file {
+  my $LOCK_FILE=lock_file_compose(@_);
+  my $LOCK;
+  my $waittime=time();
+  my $locked=0;
+
+  unless(open($LOCK,'+<'.$LOCK_FILE) or open($LOCK,'>'.$LOCK_FILE)) {
+    error("unable to open pid file: $LOCK_FILE for writing");
+    return 0; # false or fail
+  }
+  debug("setting alarm for ${MAXWAIT} seconds and locking ${LOCK_FILE}");
+  eval {
+    local $SIG{ALRM} = sub { die "alarm\n" }; # NB: \n required
+    alarm $MAXWAIT;
+    if(flock($LOCK,LOCK_EX)) {
+      $locked=1;
+    }
+    alarm 0;
+  };
+  if ($@) {
+    die unless $@ eq "alarm\n";   # propagate unexpected errors
+    notice("receieved ALRM waiting to lock ${LOCK_FILE}: alarm: ${MAXWAIT} elapsed time:".(time()-$waittime) );
+  }
+  else {
+    if($locked) {
+      debug("lock wait time for $LOCK_FILE: ".(time()-$waittime));
+      truncate($LOCK,0); # this shouldn't fail if we have the file opened and locked!
+      print $LOCK $$."\n"; # who really cares if this fails?
+      return $LOCK; # happiness is a locked file
+    }
+    else {
+      error("failed to lock ${LOCK_FILE} without receiving alarm");
+    }
+  }
+  # this is the fall through for the cases where we have received an alarm
+  # or we failed to lock the file without receiving a signal
+  close $LOCK;
+  return 0;
+}
+
+sub unlock_pid_file {
+    flock($_[0],LOCK_UN);
+    close $_[0];
+}
+
+
+sub tidy {
+    my $bh=$_[0];
+    my $tag=$$bh{tag};
+    my @com;
+    if($$bh{btype} eq 'rdiff-backup') {
+      @com=($RDIFF_BACKUP_BINARY,
+            verbargs($bh),
+            '--force',
+            '--remove-older-than',
+           );
+      if(defined $$bh{maxinc} and not defined $$bh{increments}) {
+        list_increments($bh);
+      }
+      if(defined $$bh{maxinc}) {
+        if($$bh{maxinc} =~ /^\d+$/ and
+           @{$$bh{increments}} > $$bh{maxinc} ) {
+          # too many!
+          debug("$tag\t Incs: ".
+                scalar @{$$bh{increments}}.
+                "\t Max: ".$$bh{maxinc});
+          my $lastinc=(sort {$a <=> $b} (@{$$bh{increments}}))[$$bh{maxinc}-1];
+          debug("last time to keep for $tag: ".localtime($lastinc));
+
+          my @icom=(@com,$lastinc);
+
+          push(@icom,$$bh{dest});
+          info(join(" ",@icom));
+          unless($TEST) {
+            system(@icom);
+            unless($? == 0) {
+              error("unable to execute rdiff-backup!");
+            }
+          }
+        }
+      }
+      if(defined $$bh{maxage} and
+         $$bh{maxage} =~ /^\d/) {
+
+        my @icom=(@com,$$bh{maxage});
+        push(@icom,$$bh{dest});
+
+        info(join(" ",@icom));
+        unless($TEST) {
+          system(@icom);
+          unless($? == 0) {
+            error("unable to execute rdiff-backup!");
+          }
+        }
+      }
+    } elsif($$bh{btype} eq 'duplicity') {
+      unless(defined $$bh{maxage}) {
+        debug("max age is not defined for $$bh{tag}, so we cannot tidy it");
+        return;
+      }
+      my @com=($DUPLICITY_BINARY,
+               'remove-older-than',
+               $$bh{maxage},
+               '--force');
+      $USEAGENT and push(@com,'--use-agent');
+      push(@com,verbargs($bh),
+           $$bh{dest});
+
+      info(join(" ",@com));
+      unless($TEST) {
+        set_env($bh);
+        system(@com);
+        unless($? == 0) {
+          error("unable to execute duplicity!");
+        }
+      }
+    }
+    else {
+      warn("tidy only applies to duplicity and rdiff-backup");
+    }
+  }
+
+sub debug {
+  $DISPATCHER->debug(@_);
+}
+sub info {
+  $DISPATCHER->info(@_);
+}
+sub notice {
+  $DISPATCHER->notice(@_);
+}
+sub warning {
+  $DISPATCHER->warning(@_);
+}
+sub error {
+  $DISPATCHER->error(@_);
+}
+sub critical {
+  $DISPATCHER->critical(@_);
+}
+sub alert {
+  $DISPATCHER->alert(@_);
+}
+sub emergency {
+  $DISPATCHER->emergency(@_);
+}
+
+sub set_env {
+    my $bh=$_[0];
+    my @keys=qw( btype dest path host tag gtag );
+    foreach my $key (@keys) {
+      if(exists $$bh{$key}) {
+        $ENV{"RDBDUPRUNNER_${key}"}=$$bh{$key};
+      }
+    }
+    $ENV{'RDBDUPRUNNER_zfs'} = substr $$bh{'dest'}, 1;
+    # grab more stuff from the config and put them into ENV for use by duplicity
+    if(defined $$bh{gpgpassphrase}) {
+	$ENV{PASSPHRASE}=$$bh{gpgpassphrase};
+    }
+    if($$bh{dest} =~ /^s3/) {
+	if(defined $$bh{awsaccesskeyid}) {
+	    $ENV{AWS_ACCESS_KEY_ID}=$$bh{awsaccesskeyid};
+	}
+	if(defined $$bh{awssecretaccesskey}) {
+	    $ENV{AWS_SECRET_ACCESS_KEY}=$$bh{awssecretaccesskey};
+	}
+    }
+}
+
+sub create_dispatcher {
+  $DISPATCHER=Log::Dispatch->new( callbacks => $callback_clean );
+
+  $DISPATCHER->add(Log::Dispatch::Syslog->new(name      => 'syslog',
+					      min_level => $LOG_LEVEL,
+					      ident     => 'rdbduprunner'.'['.$$.']',
+					      facility  => $FACILITY,
+					      socket    => 'unix',
+					     )
+		  );
+
+  $DISPATCHER->add(Log::Dispatch::Screen->new(name      => 'screen',
+					      min_level => $LOG_LEVEL,
+					      stderr    => 0,
+					     )
+		  );
+  $DISPATCHER->add(
+                   Log::Dispatch::File->new(
+                                            name      => 'logfile',
+                                            min_level => $LOG_LEVEL,
+                                            filename  => $LOG_FILE,
+                                            mode      => '>>',
+                                           )
+                  );
+}
+
+sub verbargs {
+  my $bh=$_[0];
+  my @a;
+  if($$bh{btype} ne 'rsync') {
+    if(defined $VERBOSITY) {
+      push(@a,'--verbosity',$VERBOSITY);
+    }
+    if(defined $TVERBOSITY and $$bh{btype} eq 'rdiff-backup') {
+      push(@a,'--terminal-verbosity',$TVERBOSITY);
+    }
+  }
+  else {
+    if($PROGRESS) {
+      push(@a,'--progress');
+    }
+    if($VERBOSE) {
+      push(@a,'--verbose');
+    }
+  }
+  @a;
+}
+
+sub build_increment_list {
+  foreach my $bp (@BACKUPS) {
+    my $tag=$$bp{tag};
+    unless($$bp{btype} eq 'rdiff-backup') {
+      next;
+    }
+	unless(defined $$bp{increments}) {
+	    list_increments($bp);
+	}
+	foreach my $inctime (@{$$bp{increments}}) {
+	    # find various tidbits of info about this increment
+	    # /home/spin/rdiff-backup/spidermonk-home-spin-wine-wow/rdiff-backup-data/session_statistics.2008-02-22T03:05:48-06:00.data
+	    my @d=localtime($inctime);
+	    my $rbdate=strftime("%FT%T",@d);
+	    my $glob="$$bp{dest}/rdiff-backup-data/session_statistics.$rbdate*.data";
+	    my $ssdfile=(glob($glob))[0];
+	    my $data={}; # store info from the session stats file... which we never ever ever use!
+	    
+	    if(defined $ssdfile) {
+		if(open(SSD,$ssdfile)) {
+		    foreach my $ln (<SSD>) {
+			$ln =~ /^(\w+)\s+(\d+\.?\d*)/ and $$data{$1}=$2;
+		    }
+		    close(SSD);
+		} else {
+		    error("unable to open increment file: $glob $ssdfile");
+		}
+	    } else {
+		notice("unable to find the session statistics file for this increment: $tag $rbdate using glob: $glob");
+	    }
+
+	    push(@INCREMENTS,{ inctime => $inctime,
+                           incdt => [@d],
+                           ssdfile => $ssdfile,
+                           ssddata => $data,
+                           tag     => $tag,
+                           bh      => $bp,
+                           backupdestination => $$bp{backupdestination},
+                         }
+		);
+	}
+    }
+    #print Dumper \@INCREMENTS;
+}
+
+sub list_increments {
+    my $bp=$_[0];
+
+    my $c="$RDIFF_BACKUP_BINARY -l --parsable-output ".$$bp{dest};
+    debug($c);
+    my @res=`$c`;
+    #@res == 1 and next; # if there is only one increment, don't consider it for removal
+    foreach my $ln (@res) {
+      chomp $ln;
+      $ln =~ /^(\d+)\sdirectory$/ or next;
+      push(@{$$bp{increments}},$1);
+    }
+}
+
+sub remove_oldest {
+    my $backupdest=$_[0];
+
+    unless(@INCREMENTS > 0) {
+	build_increment_list();
+    }
+    foreach my $ih (sort { $$a{inctime} <=> $$b{inctime} } (@INCREMENTS)) {
+	debug("remove_oldest: $$ih{inctime}");
+	if(defined $$ih{removed} and $$ih{removed}) {
+	    debug("cannot remove previously removed increment for $$ih{tag}");
+	    next;
+	}
+	if(scalar @{$$ih{bh}{increments}} == 1) {
+	    # cannot remove the only increment!
+	    debug("cannot remove only increment for $$ih{tag}");
+	    next;
+	}
+	unless($backupdest eq 'any' or
+	       $backupdest eq $$ih{bh}{backupdestination}) {
+	    debug("skipping because it isn't in the backupdestination we are looking for: $backupdest $$ih{bh}{backupdestination}");
+	    next;
+	}
+	my $t=$$ih{inctime};
+	my @com=($RDIFF_BACKUP_BINARY,
+             verbargs($$ih{bh}),
+		 '--remove-older-than',($t+1), # do I really need to add 1?
+		 $$ih{bh}{dest});
+	info(join(" ",@com));
+	unless($TEST) {
+	    system(@com);
+	    unless($? == 0) {
+		error("rdiff-backup did not exit cleanly!");
+		return 0;
+	    }
+	}
+	$$ih{removed}=1;
+#	print Dumper $BACKUPS{$$ih{tag}}{increments};
+	shift(@{$$ih{bh}{increments}});
+#	print Dumper $BACKUPS{$$ih{tag}}{increments};
+	return 1;
+    }
+}
+
+sub check_space {
+    my $bh=$CONFIG{backupdestination}{$_[0]};
+    update_bd_space($bh) or return -1;    
+    if(defined $$bh{minfree} and $$bh{avail} < $$bh{minfree}) {
+	return 0;
+    } elsif(defined $$bh{percentused} and $$bh{percent} > $$bh{percentused}) {
+	return 0;
+    }
+    return 1;
+}
+
+sub update_bd_space {
+    my $bh=$_[0];
+    my $com='POSIXLY_CORRECT=1 BLOCKSIZE=512 df -P '.$$bh{path};
+    my @a=`$com`;
+    unless($? == 0) {
+	error("unable to run \"$com\": no further backups will be attempted to this directory");
+	$$bh{busted}=1;
+        dlog('error','failed to execute df',$bh);
+	return 0;
+    }
+    unless($a[1] =~ /(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\%/) {
+	error("unable to parse output from \"$com\": no further backups will be attempted to this directory");
+	$$bh{busted}=1;
+        dlog('error','failed to parse df',$bh);
+	return 0;
+    }
+    $$bh{size}=$1;
+    $$bh{used}=$2;
+    $$bh{avail}=$3;
+    $$bh{percent}=$4;
+    return 1;
+}
+
+sub log_exit_status {
+  my($bh,$exit)=@_;
+  my $msg = dlog('notice','exit status',
+                 {'exit' => $exit},
+                 $bh);
+  $msg =~ s/\"/\\\"/g;
+  if($$bh{host} ne $LOCALHOST) {
+    my $com="ssh -x -o BatchMode=yes $$bh{host} \"logger -t rdbduprunner -p ${FACILITY}.notice '${msg}'\" < /dev/null";
+    #print $com."\n";
+    system($com);
+  }
+}
+
+sub stringy {
+  # each element passed to stringy should be a HASH REF
+  my %a; # strings
+  foreach my $h (@_) {
+    next unless ref $h eq 'HASH';
+    foreach my $key (keys(%$h)) {
+      next if ref ${$h}{$key}; # must not be a reference
+      my $val=${$h}{$key};
+      $val =~ s/\n/NL/g; # remove newlines
+      $val =~ s/"/\\"/g; # replace " with \"
+      if($key eq 'tag' or $key eq 'host') {
+        $a{"rdbduprunner_${key}"}=$val;
+      } else {
+        $a{$key}=$val;
+      }
+    }
+  }
+  my @f;
+  foreach my $key (sort {&sort_tags} (keys(%a))) {
+    push(@f,"$key=\"$a{$key}\"");
+  }
+  return join(" ",@f);
+}
+
+sub dlog {
+  my $level = shift;
+  my $msg   = shift;
+  my $time  = time();
+  my $str   = stringy({'msg'      => $msg,
+                       'severity' => $level,
+                       timestamp  => $time,
+                       datetime   => strftime("%FT%T%z",localtime($time))},
+                      @_);
+  $DISPATCHER->log( level   => $level,
+                    message => $str,
+                  );
+  return $str;
+}
+
+sub sort_tags {
+  return tag_prio($a) <=> tag_prio($b);
+}
+
+sub tag_prio {
+  my %prios=(
+             datetime  => -10,
+             severity  => -9,
+             msg       => -5,
+             timestamp => 50,
+             host      => 2,
+             tag       => 1,
+             backupdestination => 10,
+             dest      => 10,
+             gtag      => 10,
+             btype     => 10,
+            );
+  my $t=lc $_[0];
+  return $prios{$t} if defined $prios{$t};
+  return 0;
+}
+
+# given a string, interpret it as 0 or 1 (false or true)
+sub bool_parse {
+  my @true = qw( true t yes on 1 );
+  my @false = qw( false f no off 0 );
+
+  if(grep { lc $_[0] eq $_ } (@true)) {
+    return 1;
+  }
+  elsif(grep { lc $_[0] eq $_ } (@false)) {
+    return 0;
+  }
+  else {
+    warn "unable to parse provided value for boolean option, assuming false";
+    return 0;
+  }
+}
+
+# if the path given is on a zfs filesystem, return the zfs it lives on
+sub find_zfs {
+  unless ( -d $_[0] ) {
+    warn("the path ${_[0]} doesn't exist, so we cannot determine if it is zfs, assuming not");
+    return 0;
+  }
+  my $fstype = `stat -f -c '%T' ${_[0]} | head -1`; chomp $fstype;
+  if($fstype eq 'zfs') {
+    my $fs = `stat -c '%m' ${_[0]}`;chomp $fs;
+    debug("found zfs filesystem at: ${fs}");
+    open P, '</proc/mounts' or die "unable to read /proc/mounts";
+    foreach(<P>) {
+      my @s = split(/\s+/);
+      if ( $s[1] eq $fs and $s[2] eq 'zfs' ) {
+        debug("found zfs at $s[0]");
+        return $s[0];
+      }
+    }
+    close P;
+  }
+  return 0;
+}
+
+# the path must be a directory, and a top level zfs, return said zfs
+# pass the path of the backupdestination to this function
+sub which_zfs {
+  my $backup_destination_path = shift @_;
+  unless ( -d $backup_destination_path ) {
+    warn("the path ${backup_destination_path} doesn't exist, so we cannot determine if it is zfs, assuming not");
+    return 0;
+  }
+  my $fstype = `stat -f -c '%T' ${backup_destination_path} | head -1`; chomp $fstype;
+  unless($fstype eq 'zfs') {
+    warn("the path ${backup_destination_path} is not zfs, so we cannot determine which zfs it is");
+    return 0;
+  }
+  my $fs = `stat -c '%m' ${backup_destination_path} | head -1`; chomp $fs;
+  unless($fs eq $backup_destination_path) {
+    warn("the provided backup destination path is not a top level mount, so we cannot create child zfs (${backup_destination_path},${fs})");
+    return 0;
+  }
+  open P, '</proc/mounts' or die "unable to read /proc/mounts";
+  foreach(<P>) {
+    my @s = split(/\s+/);
+    if ( $s[1] eq $fs and $s[2] eq 'zfs' ) {
+      debug("found zfs at $s[0]");
+      close P;
+      return $s[0];
+    }
+  }
+  close P;
+  error("we failed to find the zfs at ${backup_destination_path} in /proc/mounts");
+  return 0;
+}
+
+# use what is in %CONFIG and global config options to create the
+# @BACKUPS array:
+sub parse_config_backups {
+  my @BACKUPS;
+  foreach my $bstag (keys(%{$CONFIG{backupset}})) {
+    # allow bstags to have the same name, just process them distinctly
+    my @bslist=($CONFIG{backupset}{$bstag});
+    if ( reftype $CONFIG{backupset}{$bstag} eq reftype [] ) {
+      @bslist=@{$CONFIG{backupset}{$bstag}};
+      warn("multiple backupsets with the same name: ${bstag}");
+    }
+    foreach my $bs (@bslist) {
+      my $host=(defined $$bs{host} ? $$bs{host} : $LOCALHOST);
+      my $btype;
+      my $backupdest;
+
+      if (defined $HOST and $host !~ /$HOST/) {
+        next;
+      }
+      dlog('debug','backupset',
+           $bs);
+
+      if (defined $$bs{backupdestination}) {
+        $backupdest=$$bs{backupdestination};
+      } elsif (defined $CONFIG{defaultbackupdestination}) {
+        $backupdest=$CONFIG{defaultbackupdestination};
+      }
+      unless(defined $backupdest) {
+        error("there is no BackupDestination defined for the BackupSet ($bstag): so it cannot be processed");
+        next;
+      }
+
+      if (defined $CONFIG{backupdestination}{$backupdest}{type} and
+          $CONFIG{backupdestination}{$backupdest}{type} =~ /^(rdiff\-backup|duplicity|rsync)$/) {
+        # check to make sure that if the type isn't set, we set it to rsync
+        $btype=$CONFIG{backupdestination}{$backupdest}{type};
+      } else {
+        $btype='rsync';
+      }
+      if ($btype eq 'duplicity' and $host ne $LOCALHOST) {
+        error("$bstag is a duplicity backup with host set to $host: duplicity backups must have a local source!");
+        next;
+      }
+
+      if (defined $DEST and $backupdest !~ /$DEST/) {
+        next;
+      }
+      unless (exists $CONFIG{backupdestination}{$backupdest} and exists $CONFIG{backupdestination}{$backupdest}{path} and exists $CONFIG{backupdestination}{$backupdest}{type}) {
+        error("there is no such backupdestination as $backupdest in the config, skipping");
+        next;
+      }
+      my $backupdestpath=$CONFIG{backupdestination}{$backupdest}{path};
+
+      my @paths;
+      if (defined $$bs{path}) {
+        @paths=ref($$bs{path}) eq "ARRAY" ? @{$$bs{path}} : ($$bs{path});
+      }
+      if (defined $$bs{allowfs}) {
+        debug("setting the list of allowed filesystems in the backup set, which will override the global options");
+        @ALLOW_FS=ref($$bs{allowfs}) eq "ARRAY" ? @{$$bs{allowfs}} : ($$bs{allowfs});
+      }
+
+      if ((defined $$bs{inventory} and $$bs{inventory}) and not (defined $$bs{'disabled'} and $$bs{'disabled'})) {
+        # perform inventory
+        debug("performing inventory on $host");
+        my $inventory_command='cat /proc/mounts';
+        if ($host ne $LOCALHOST) {
+          $inventory_command="ssh -x -o BatchMode=yes ${host} ${inventory_command} < /dev/null";
+        }
+        if (-x '/usr/bin/waitmax') {
+          $inventory_command="/usr/bin/waitmax 30 ${inventory_command}";
+        } elsif ( -x '/bin/waitmax') {
+          $inventory_command="/bin/waitmax 30 ${inventory_command}";
+        }
+        my @a=`${inventory_command}`;
+        if ($? == 0) {
+          my @seen;
+        M:
+          foreach my $m (sort(@a)) {
+            my @e=split(/\s+/,$m);
+            if ( scalar @ALLOW_FS > 0 ) {
+              if ( not grep(/^$e[2]$/,@ALLOW_FS) ) {
+                debug("filesystem type is not allowd via the allow list: ${e[2]}");
+                next;
+              }
+            } elsif ( $e[2] =~ /$SKIP_FS_REGEX/ ) {
+              debug("filesystem type is not allowd via the skip list: ${e[2]}");
+              next;
+            }
+            if (defined $$bs{skip}) {
+              foreach my $skip (ref($$bs{skip}) eq "ARRAY" ? @{$$bs{skip}} : ($$bs{skip})) {
+                if ($e[1] eq $skip) {
+                  next M;
+                }
+              }
+            }
+            if (defined $$bs{skipre}) {
+              foreach my $skipre (ref($$bs{skipre}) eq "ARRAY" ? @{$$bs{skipre}} : ($$bs{skipre})) {
+                if ($e[1] =~ /$skipre/) {
+                  next M;
+                }
+              }
+            }
+            # skip seen devices
+            grep(/^$e[0]$/,@seen) and next;
+            push(@seen,$e[0]);
+            push(@paths,$e[1]);
+          }
+        } else {
+          error("unable to inventory ${host}");
+        }
+      }
+      foreach my $path (@paths) {
+        $path =~ s/.+\/$//; # remove any trailing slash, but only if there is something before it!
+        my $bh={};
+        if (defined $PATH and $path !~ /$PATH/) {
+          next;
+        }
+        my $dest;
+        my $tag='';
+        my $gtag='';
+        if (defined $$bs{tag}) {
+          $dest=$$bs{tag};
+          $tag=$dest;
+          $gtag='generic-'.$tag;
+        } else {
+          $dest=$path;
+          $dest =~ s/\//\-/g;
+          $dest =~ s/ /_/g;
+          $dest eq '-' and $dest='-root';
+          $tag=$host.$dest;
+          $gtag='generic'.$dest;
+        }
+        # I should use a perl module here, I guess, not .
+        $dest=$backupdestpath.'/'.$tag;
+        #debug("Host: $host Path: $path Tag: $tag Dest: $dest Root: $backupdestpath");
+
+        $bh={%{$bs}};           # very important to make a copy here
+        $$bh{dest}=$dest;
+        $$bh{path}=$path;
+        $$bh{tag}=$tag;
+        $$bh{host}=$host;
+        $$bh{backupdestination}=$backupdest;
+        $$bh{gtag}=$gtag;
+        $$bh{btype}=$btype;
+        if ($$bh{btype} eq 'rsync') {
+          $$bh{path}=$$bh{path}.'/';
+          $$bh{path} =~ s/\/\/$/\//; # remove double slashes
+        }
+        my $epath=( $btype eq 'rsync'
+                    ? join('/',$EXCLUDE_PATH,'excludes')
+                    : join('/',$EXCLUDE_PATH,'rdb-excludes')
+                  );
+        if ( -f $epath.'/generic' ) {
+          push(@{$$bh{excludes}},$epath.'/generic');
+        }
+
+        if ( -f $epath.'/'.$$bh{gtag} ) {
+          push(@{$$bh{excludes}},$epath.'/'.$$bh{gtag});
+        }
+
+        if ( -f $epath.'/'.$tag ) {
+          push(@{$$bh{excludes}},$epath.'/'.$tag);
+        }
+        $$bh{exclude}=[];
+        foreach my $exc (ref($$bs{exclude}) eq "ARRAY" ? @{$$bs{exclude}} : ($$bs{exclude})) {
+          if (defined $exc and length $exc > 0) {
+            push(@{$$bh{exclude}},$exc);
+          }
+        }
+        if (defined $MAXAGE) {
+          $$bh{maxage}=$MAXAGE;
+        } elsif (not defined $$bh{maxage} and
+                 defined $CONFIG{maxage}) {
+          $$bh{maxage}=$CONFIG{maxage};
+        }
+        if (defined $MAXINC) {
+          $$bh{maxinc}=$MAXINC;
+        } elsif (not defined $$bh{maxinc} and
+                 defined $CONFIG{maxinc}) {
+          $$bh{maxinc}=$CONFIG{maxinc};
+        }
+        # interpret variables from cli, global, bd and bs levels and finally use the default if specified
+        foreach my $key (keys(%option_mappings)) {
+          my $var = $option_mappings{$key}{'var'};
+          if(defined $$var) {
+            # override, no matter what, as it was specified on the
+            # command line:
+            $$bh{$key} = $$var;
+          }
+          elsif( defined $$bs{$key} ) {
+            # should already have been copied!
+            # however to make it clear the is the second top/lowest priority:
+            $$bh{$key} = $$bs{$key};
+          }
+          elsif( defined $CONFIG{backupdestination}{$$bh{backupdestination}}{$key} ) {
+            # defined at the backdestination level
+            $$bh{$key} = $CONFIG{backupdestination}{$$bh{backupdestination}}{$key};
+          }
+          elsif( defined $CONFIG{$key} ) {
+            # defined at the global config level
+            $$bh{$key} = $CONFIG{$key};
+          }
+          elsif( defined $option_mappings{$key}{'def'} ){
+            $$bh{$key} = $option_mappings{$key}{'def'};
+          }
+          if( defined $$bh{$key} and defined $option_mappings{$key}{'normalize'} ) {
+            $$bh{$key} = &{$option_mappings{$key}{'normalize'}}($$bh{$key});
+          }
+        }
+        # if this is defined in a backupset, allow that to override the global definition, if it exists
+        foreach my $var (sort(map(lc,qw( GPGPassPhrase AWSAccessKeyID AWSSecretAccessKey SignKey EncryptKey Trickle ZfsCreate ZfsSnapshot )))) {
+          unless (defined $$bh{$var}) {
+            if (defined $CONFIG{$var}) {
+              $$bh{$var}=$CONFIG{$var};
+            }
+            if (defined $CONFIG{backupdestination}{$$bh{backupdestination}}{$var}) {
+              # the above is why people hate perl, possibly
+              $$bh{$var}=$CONFIG{backupdestination}{$$bh{backupdestination}}{$var};
+            }
+          }
+        }
+        my @split_host = split(/\./,$$bh{host});
+        $$bh{'src'} = ($$bh{host} eq $LOCALHOST or $split_host[0] eq $LOCALHOST ) ? $$bh{path} : $$bh{host}.($$bh{btype} eq 'rsync' ? ':' : '::').$$bh{path};
+        dlog('debug','backup',$bh);
+        push(@BACKUPS,$bh);
+      }
+    }
+  }
+  return @BACKUPS;
+}
+# end of parse_backup_configs
+
+# copied from the old version of List::Util:
+sub string_any {
+    my $s = shift;
+    foreach (@_) {
+        return 1 if $s eq $_;
+    }
+    return 0;
+}
+
+=head1 NAME
+
+rdbduprunner - perl magic wrapper for rsync, rdiff-backup, and duplicity
+
+=head1 SYNOPSIS
+
+B<rdbduprunner> {B<-h|--help>}
+
+B<rdbduprunner> {B<--calculate-average>|B<--check>|B<--cleanup>|B<--compare>|B<--verify>|B<--dry-run>|B<--checksum>|B<--dump>|B<--list>|B<--list-oldest>|B<--orphans>|B<--remove-oldest>|B<--status>|B<--tidy>} {B<--test>|B<--notest>} {B<--config> I<path>} {B<--dest> I<regex>} {B<--host> I<regex>} {B<--path> I<regex>} {B<--facility> I<user|daemon|...>} {B<--level> I<info|warn|...>} {B<--lockfile> I<path>} {B<-t|--terminal-verbosity> I<integer>} {B<--verbosity> I<integer>} {B<-v|--verbose>} {B<--progress>} {B<--maxinc> I<integer>} {B<--maxage> I<timespec>}  {B<--tempdir> I<path>} {B<--full>} {B<--force>} {B<--maxprocs> I<integer>} {B<--maxwait> I<integer>} =item {B<--allow-source-mismatch>} {B<-n|--dry-run>} {B<-c|--checksum|--no-checksum>} {B<--inplace>|B<--no-inplace>} {B<--whole-file>|B<--no-whole-file>} {B<--stats>|B<--nostats>} {B<--skipfs> I<filesystem>} {B<--allowfs> I<filesystem>}
+
+=head1 DESCRIPTION
+
+rdbduprunner is a wrapper for rsync, rdiff-backup, and duplicity
+backups.  By default rdbduprunner will get all it's configuration from
+~/.rdbduprunner.rc using an apache-esque config file format parsed by
+the Config::General module.
+
+General usage involves running rdbduprunner with no options which will
+only print out warnings and the commands that would be invoked if you
+were to run it with the --notest option. Then run it again with the
+--notest option to see the output.
+
+Other common options involve filtering which backups to run, adjusting
+the verbosity of the output, adjusting logging, and so on.
+
+
+=head1 OPTIONS
+
+=head2 MAJOR MODES
+
+rdbduprunner's primary mode is "backup" and the following override
+that; only one of the following is allowed for any invocation of
+rdbduprunner.  Many only apply to one or both of rdiff-backup or
+duplicity since they act on archives of their own creation.  For rsync
+backups tools like ls and du perform similar functions.
+
+=over 4
+
+=item {B<--calculate-average>} (rdiff-backup only)
+
+Parses run files from rdiff-backup to calculate average increment
+size.  If you do not limit which backups this option applies to using
+--dest, --host, or --path options you will get the average increment
+size of all backups that rdbduprunner is configured to run with
+rdiff-backup.
+
+
+=item {B<--check>|B<--cleanup>} (rdiff-backup/duplicity only)
+
+Both options are identical.  duplicty backups will have the cleanup
+option run on the destination directory.  For rdiff-backup the
+--check-destination-dir option will be run against the directory.
+
+=item {B<--compare>|B<--verify>} (rdiff-backup/duplicity only)
+
+Passes the compare option to duplicty and the --verify option to
+rdiff-backup which both have the purpose of printing what has changed
+since the last backup, in other words what would be backed up on the
+next run.
+
+=item {B<--dump>}
+
+Simply dumps the internal data structures for backups and
+configuration options and exits.  Meant purely for debugging.
+
+=item {B<--list>} (duplicity only)
+
+Passes the list-current-files option to duplicity, since duplicity
+stores everything inside a tar file.
+
+=item {B<--list-oldest>} (rdiff-backup only)
+
+Lists all increments from all rdiff-backup type backups in the order
+of their age.
+
+=item {B<--orphans>} (rdiff-backup only)
+
+Find orphaned rdiff-backup temporary files inside backup destinations
+and print those file names to stdout (for deletion, likely.)
+
+=item {B<--remove-oldest>} (rdiff-backup only)
+
+Removes the oldest known backup from all known rdiff-backup type
+backups.  Should remove only one backup regardless of other settings.
+Meant primarily for testing?  Ignores all other settings for cleaning
+up rdiff-backup style backups. This option honors the --test/--notest
+flags and will only print how rdiff-backup would be run if --notest
+isn't specified as well.
+
+=item {B<--status>}
+
+Works on all backup types.  On rsync invokes du, on duplicity uses the
+collection-status option and on rdiff-backup uses the
+--list-increment-sizes option.  This option requires --notest to
+execute, primarily because of the time it takes to run the operations.
+
+=item {B<--tidy>} (rdiff-backup/duplicity only)
+
+Attempts to apply the settings for a backup regarding the maximum
+number of increments or maximum age of an increment to all or
+specified backups.
+
+=back
+
+=head2 SUB OPTIONS
+
+=over 4
+
+=item {B<--test>|B<--notest>}
+
+The default invocation assumes --test which causes rdbduprunner to
+print which commands it would run.  Passing --notest will cause
+rdbduprunner to actually run the backup commands.
+
+=item {B<--dest> I<regex>}
+
+This option causes the backups to be run to be filtered based on the
+BackupDestination.
+
+=item {B<--host> I<regex>}
+
+This option causes the backups to be run to be filtered based on the
+Host.
+
+=item {B<--path> I<regex>}
+
+This option causes the backups to be run to be filtered based on the
+path on the host to be backed up.
+
+=item {B<-t|--terminal-verbosity> I<integer>}
+
+Increases logging verbosity to the terminal with rdiff-backup or
+duplicity backups.
+
+=item {B<--verbosity> I<integer>}
+
+Increases logging verbosity to the rdiff-backup/duplicity log files.
+
+=item {B<-v|--verbose>} (rsync only)
+
+Passes -v to rsync invocations.
+
+=item {B<--progress>} (rsync only)
+
+Passes --progress to rsync invocations.
+
+=item {B<--facility> I<user|daemon|...>}
+
+Default: user
+Changes the facility as passed to the syslog subsystem.
+
+=item {B<--level> I<debug|info|notice|warning|error|critical|alert|emergency>}
+
+Default: info
+Syslog severity level which is passed to the logging dispatcher. Log
+messages of the specified severity or greater will be logged to
+syslog, stdout, and the rdbduprunner log file.
+
+=item {B<--maxinc> I<integer>}
+
+Acts as if the MaxInc config option were applied to every backup in
+the configuration, but the backup specific MaxInc still takes
+precendence for any given backup.
+
+=item {B<--maxage> I<timespec>}
+
+Acts as if the MaxAge config option were applied to every backup in
+the configuration, but the backup specific MaxAge still takes
+precendence for any given backup.
+
+=item {B<--stats>|B<--nostats>|B<--no-stats>}
+
+Corresponds to and supersedes the Stats configuration item, see below.
+
+=item {B<--tempdir> I<path>}
+
+Pass the --tempdir or --temp-dir options to underlying binaries in the
+same manner as if the TempDir global config option had been specified.
+
+=item {B<--full>} (duplicity only)
+
+Passess the full option to duplicity backup.
+
+=item {B<--force>} (duplicity only)
+
+Passess the --force option to duplicity cleanup mode.
+
+=item {B<--config> I<path>}
+
+Change path to configuration file.
+
+=item {B<--maxprocs> I<integer>}
+
+Default: 1
+Maximum number of simultaneous backups to perform.  rdbduprunner will
+never do more than one backup from any given host at a time but if
+there are multiple hosts multiple backups should occur at once.
+See MaxProcs global config option.
+
+=item {B<--maxwait> I<integer>}
+
+Default: 86400
+Maximum number of seconds to wait for a lock on any given per-host
+lock file.
+See MaxWait global config option.
+
+=item {B<--allow-source-mismatch>} (duplicity only)
+
+Passes the identical option to duplicity.  No affect on other backup
+types.
+
+=item {B<-n|--dry-run>} (rsync only)
+
+Passes the --dry-run (-n) option to rsync.  rdbduprunner will not run
+the prerun, postrun or zfs create and zfs snapshot commands (when
+applicable.)
+
+=item {B<--whole-file|--wholefile|--no-whole-file|--no-wholefile>} (rsync only)
+
+Passes the --whole-file or --no-whole-file options to rsync.  This
+supersedes the WholeFile configuration boolean specified in the config
+file.
+
+=item {B<--inplace|--no-inplace|--noinplace> - Boolean (true|t|yes|on|1), optional, rsync only
+
+Corresponds to the Inplace configuration item, see below.
+
+=item {B<-c|--checksum>} (rsync only)
+
+Passes the --checksum (-c) option to rsync.
+
+=item {B<--skipfs> I<filesystem>}
+
+Adds the specified filesystem to the list of filesystems to be ignored
+during inventory.
+
+--skipfs reiserfs
+
+=item {B<--allowfs> I<filesystem>}
+
+Allows this filesystem to be included during inventory.  When
+--allowfs is used, the skipfs list is disregarded.  Only filesystem
+types specified this way will be included during inventory.
+
+--allowfs reiserfs --allowfs ext4
+
+=back
+
+=head1 RETURN VALUE
+
+=head1 ERRORS
+
+=head1 DIAGNOSTICS
+
+=head1 EXAMPLES
+
+=head1 ENVIRONMENT
+
+=head1 FILES
+
+=head2 F<$HOME/.config/rdbduprunner/config> F</etc/rdbduprunner/rdbduprunner.conf>
+
+rdbduprunner's config file is an Apache style config file parsed by
+the Config::General perl module. It consists of global options,
+options enclosed in a BackupDestination config section and options
+enclosed in a BackupSet section.  The options names are case
+insensitive. Options are generally honored in this order:
+
+=head2 F<$HOME/.local/state/rdbduprunner.pid> F</var/run/rdbduprunner.pid>
+
+Default PID/lock file.
+
+=over 4
+
+=item Command line options
+
+=item BackupSet options
+
+=item BackupDestination options
+
+=item Global options
+
+=back
+
+=head3 Global Options
+
+=over 4
+
+=item I<DuplicityBinary> - path to duplicity
+
+=item I<RdiffBackupBinary> - path to rdiff-backup
+
+=item I<RsyncBinary> - path to rsync
+
+=item I<ZfsBinary> - path to zfs
+
+=item I<LockFile> - change the default lock/pid file from
+F<$HOME/rdbduprunner.pid>
+
+=item I<ExcludePath> - What directory to look for exclude
+files. Defaults to F</etc/rdbduprunner-excludes>
+
+=item I<UseAgent> - Boolean, optional
+Passes the --use-agent option to duplicity.
+
+=item I<TempDir> - Passed to some binaries as an alternate temp dir
+path. Defaults to not pass any temp options therefore probably uses
+/tmp.
+
+=item I<DefaultBackupDestination> - Which backup destination to use if
+none is specified.
+
+=item I<MaxProcs> - Maxiumum number of backups to run simultaneously.
+
+=item I<MaxWait> - Maxiumum number of seconds to wait for a host lock.
+
+=item I<AllowFS> - String, Optional
+
+Only inventory filesystems matching filesystem types specified via
+this option.  Can be specified multiple times.  Can also be specified
+at the BackupSet level.
+
+=item I<WholeFile> - Boolean (default: false)
+
+When true, pass --whole-file to rsync.
+When false, pass --no-whole-file to rsync.
+
+Can be specified at the BackupDestination and BackupSet levels as
+well, which will override the global setting.
+
+=item I<Stats> - Boolean (default: true)
+
+Most backup binaries supported by rdbduprunner have the option to
+produce some kind of statistics after a run.  Setting this to false
+will turn those options off.
+
+=back
+
+=head3 BackupDestination Options
+
+Items enclosed in a <BackupDestination X> configuration block. The
+name of the block is referenced by the I<DefaultBackupDestination> global
+option and the I<BackupDestination> config option inside BackupSet
+blocks.
+
+=over 4
+
+=item I<PercentUsed> - Integer, optional
+
+Keep disk usage on destination below this percent:
+When using rdiff-backup and duplicty type backups rdbduprunner will
+attempt to delete older increments in order to keep usage below this
+percentage.  It will do so before running backups and will not run
+backups if it cannot reduce usage below this level.
+
+=item I<MinFree> - Integer, optional
+
+Keep disk usage below this number: When using rdiff-backup and
+duplicty type backups rdbduprunner will attempt to delete older
+increments in order to keep this much space free as specified in 512
+byte blocks (because I could reliably get df to report this value.) It
+will do so before running backups and will not run backups if it
+cannot free this much space.
+
+=item I<Inplace> - Boolean (true|t|yes|on|1), optional, rsync only
+
+Passes the --inplace and --partial options to rsync (instead of
+--sparse) for this destination.  Assumed to be true every day of the
+week except Sunday unless explicitly set.  If you always want
+--inplace, set this to true, if you always want --sparse set this to
+false.
+
+=back
+
+=head3 BackupSet Options
+
+Items enclosed in a <BackupSet X> configuration block. The name of the
+block is not referenced anywhere but should be unique or collisions
+will occur.
+
+=over 4
+
+=item I<BackupDestination> - String, optional
+
+Must match existing BackupDestination as defined above.  When not
+specified the default will be used as specified in global options as
+DefaultBackupDestination.  These backups will be written to the the
+destination specified using the backup type and other options
+specified for that backup destination.
+
+=item I<Path> - String, mandatory (multiples ok)
+
+Directory to be backed up. This may be specified multiple times per
+backupset, and doing so will create multiple backups one for each path
+specified.
+
+=item I<Host> - String, optional
+
+Host to be backed up; if not specified assumes localhost
+
+=item I<Inventory> - Boolean (if present at all, assumed to be true!)
+
+Look at the remote machine for a list of directories to back up:
+Excludes a long list of non-filesystem type filesystems (fuse, etc.)
+Creates a new backup from each one not excluded.
+
+=item I<Tag> - String, optional
+
+Overrides the generated tag used to construct the output directory path.
+
+=item I<Exclude> - String, optional (multiples ok)
+
+Pass these paths to the --exclude or similar options of the underlying
+invocation of rdiff-backup, duplicity, or rsync.  Does not attempt to
+normalize the paths for any given method of specifiying exclusions.
+
+=item I<Skip> - String, optional (multiples ok)
+
+If a path added via the inventory process matches exactly the string
+or strings specified by a Skip option, do not back up that
+filesystem/mountpoint. The following configuration fragment will cause
+rdbduprunner to backup all filesystems except /tmp F<if> and only if /tmp
+is a seperate filesystem.  It does not work as an exclude directive
+above, it only matches filesystem mount points:
+
+ Inventory true
+ Skip /tmp
+
+=item I<SkipRE> - String, optional (multiples ok)
+
+If a path added via the inventory process matches the string specified
+by a SkipRE option when treated as a regular expression, rdbduprunner
+will not not back up that filesystem/mountpoint. The following
+configuration fragment will cause rdbduprunner to back up all
+filesystems except filesystems mounted under /mnt, but only if they
+are a seperate unique filesystem added via inventory:
+
+ Inventory true
+ SkipRE /mnt/.+
+
+If there is a directory, in this example, like /mnt/test it will still
+be backed up unless it it's own mountpoint.  It does not work as an
+exclude directive as documented above above, it only matches
+filesystem mount points:
+
+=item I<MaxInc> - Integer, optional
+
+Used by the --tidy option to remove all but the most recent X
+increments.
+
+=item I<MaxAge> - String, optional (rdiff-backup/duplicity only)
+
+Used by the --tidy option to remove all increments older than
+specified age.  Ultimately this is passed to the remove-older-than
+options of rdiff-backup or duplicity so see those manpages for
+details.
+
+=item I<ZfsCreate> - Boolean, optional
+
+Create a zfs for the path, if the directory doesn't already exist.
+Can be set at the BackupDestination level as well.
+
+=item I<ZfsSnapshot> - Boolean, optional
+
+Create a zfs snapshot of the destination path, if possible.
+Can be set at the BackupDestination level as well.
+
+=item I<Inplace> - Boolean (true|t|yes|on|1|false|f|no|off|0), optional
+
+Passes the --inplace and --partial options to rsync for this
+destination.  Assumed to be false unless Inplace is set to one of the
+above parameters. Defaults to false.
+Can be set at the BackupDestination level as well.
+
+=item I<AllowFS> - String, optional
+
+Only inventory filesystems matching filesystem types specified via
+this option.  Can be specified multiple times.  Specified at the
+BackupSet level will completely override the list of filesystem types
+specified at the global level.
+
+=back
+
+=head1 CAVEATS
+
+=head1 BUGS
+
+=head1 RESTRICTIONS
+
+=head1 NOTES
+
+rdbduprunner *should* prefer to use configuration items in this order,
+with later entries superseding the prior level. This assumes that the
+option itself is applicable all the way down to the individual
+invocations of the backup software.
+
+=item Global Configuration
+
+=item BackupDestination
+
+=item BackupSet
+
+=item Command Line Options
+
+=head1 AUTHOR
+
+Aran Cox <arancox@gmail.com>
+
+=head1 HISTORY
+
+=head1 SEE ALSO
+
+=over 4
+
+rdiff-backup(1), duplicity(1), rsync(1), trickle(1), ssh(1), unison(1).
+
+=back
