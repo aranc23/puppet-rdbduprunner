@@ -17,7 +17,7 @@ foreach my $day (0..$MAXDAYS) {
 
 my %a;
 
-foreach my $log (reverse(@LOGFILES)) {
+foreach my $log (reverse(@files)) {
   if($log =~ /\.gz/) {
     open(L,'gzip -d -c '.$log.'|') or warn "file ${log} exists but cannot be opened" and next;
   }
