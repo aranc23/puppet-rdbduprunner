@@ -1,6 +1,1 @@
----
-rdbduprunner::packages: 
-  - libconfig-general-perl
-  - liblog-dispatch-perl
-  - libyaml-perl
-  - libjson-perl
+--- {}
