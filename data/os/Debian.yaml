@@ -1,1 +1,2 @@
---- {}
+---
+rdbduprunner::packages: ['perl-backup-rdbduprunner']
