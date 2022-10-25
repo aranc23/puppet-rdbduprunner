@@ -21,7 +21,7 @@ lookup_options:
       sort_merged_arrays: true
       knockout_prefix: '---'
 
-rdbduprunner::packages: ['perl-Backup-rdbduprunner']
+rdbduprunner::packages: ['rdbduprunner']
 rdbduprunner::owner: root
 rdbduprunner::group: 0
 rdbduprunner::mode: '0440'
