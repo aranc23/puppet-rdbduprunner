@@ -7,9 +7,9 @@ class rdbduprunner::configure
   $backupdestinations = $rdbduprunner::backupdestinations
 
   concat { $rdbduprunner::config_file:
-    owner  => $rdbduprunner::owner,
-    group  => $rdbduprunner::group,
-    mode   => '0440',
+    owner => $rdbduprunner::owner,
+    group => $rdbduprunner::group,
+    mode  => '0440',
   }
   # concat::fragment { "warning in ${rdbduprunner::config_file}":
   #   target  => $rdbduprunner::config_file,
@@ -17,7 +17,8 @@ class rdbduprunner::configure
   #   order   => '00',
   # }
   $integer_vars = ['MaxInc','MaxProcs','MaxWait']
-  $string_vars = ['ZfsBinary','DefaultBackupDestination','DuplicityBinary','RdiffBackupBinary','RsyncBinary','LockFile','ExcludePath','TempDir']
+  $string_vars = ['ZfsBinary','DefaultBackupDestination','DuplicityBinary',
+                  'RdiffBackupBinary','RsyncBinary','LockFile','ExcludePath','TempDir']
   $array_vars = ['AllowFS']
   $boolean_vars = ['UseAgent','Inplace','Checksum','WholeFile','Stats']
   concat::fragment { "global options ${rdbduprunner::config_file}":
