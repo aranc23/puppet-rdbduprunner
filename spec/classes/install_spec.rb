@@ -9,6 +9,7 @@ describe 'rdbduprunner::install' do
       let(:pre_condition) { 'include rdbduprunner' }
 
       it { is_expected.to compile }
+      it { is_expected.to contain_package('rdbduprunner') }
     end
   end
 end
