@@ -8,6 +8,68 @@ describe 'rdbduprunner' do
       let(:facts) { os_facts }
 
       it { is_expected.to compile }
+      it { is_expected.to compile.with_all_deps }
+      it { is_expected.to contain_class('rdbduprunner::install') }
+      it { is_expected.to contain_class('rdbduprunner::configure') }
+      it { is_expected.to contain_class('rdbduprunner::service') }
+      it { is_expected.to contain_file('/etc/cron.daily/rdbduprunner').
+                            with('ensure' => 'present',
+                                 'owner' => 'root',
+                                 'group' => 0,
+                                 'mode' => '0550',
+                                 'content' => "#!/bin/sh\ntest -x /usr/bin/keychain && eval $( /usr/bin/keychain --eval --quiet ) ; /usr/bin/rdbduprunner --level info --notest >/dev/null 2>&1\n") }
+      ['monthly','weekly','hourly','yearly'].each do |p|
+        it { is_expected.to contain_file("/etc/cron.#{p}/rdbduprunner").
+                              with('ensure' => 'absent') }
+      end
+      it { is_expected.to contain_file("/etc/cron.d/rdbduprunner").
+                            with('ensure' => 'absent') }
+      it { is_expected.to contain_cron('rdbduprunner').
+                            with('ensure' => 'absent') }
+      it { is_expected.to contain_file('/etc/logrotate.d/rdbduprunner').
+                            with('ensure' => 'present',
+                                 'owner' => 'root',
+                                 'group' => 0,
+                                 'mode' => '0644',
+                                 'source' => 'puppet:///modules/rdbduprunner/logrotate.d/rdbduprunner',
+                                ) }
+      
     end
+  end
+  context 'with class params' do
+    let(:params) do
+      { 'backupsets' => { 'test' => { 'paths' => [ '/usr' ], 'prerun' => '/bin/true' } },
+        'rsync_tag_excludes' => { 'some' => [ 'some', 'thing' ] },
+        'rdbdup_tag_excludes' => { 'some' => [ 'some', 'other', 'thing' ],
+                                   'other' => ['other','things'] },
+        'owner' => "bob",
+        'group' => "jim",
+      }
+    end
+
+    it { should compile }
+    # it is always called rdbduprunner now:
+    it { is_expected.to contain_package('rdbduprunner') }
+    it { is_expected.to contain_concat('/etc/rdbduprunner.rc').
+                          with('owner' => 'bob', 'group' => 'jim', 'mode' => '0440' ) }
+    it { is_expected.to contain_file('/etc/rdbduprunner/excludes').
+                          with('ensure' => 'directory', 'owner' => 'bob', 'group' => 'jim', 'mode' => '0775', 'purge' => false) } 
+    it { is_expected.to contain_file('/etc/rdbduprunner/rdb-excludes').
+                          with('ensure' => 'directory', 'owner' => 'bob', 'group' => 'jim', 'mode' => '0775', 'purge' => false) }
+    it { is_expected.to contain_rdbduprunner__backupset('test').with(
+                          'config_file' => '/etc/rdbduprunner.rc',
+                          'concat' => true,
+                          'paths' => ['/usr'],
+                          'prerun' => '/bin/true',
+                        ) }
+    it { is_expected.to contain_file('/etc/rdbduprunner/excludes/some').
+                          with('owner' => 'bob', 'group' => 'jim', 'mode' => '0664').
+                          with_content("some\nthing\n") }
+    it { is_expected.to contain_file('/etc/rdbduprunner/rdb-excludes/some').
+                          with('owner' => 'bob', 'group' => 'jim', 'mode' => '0644').
+                          with_content("some\nother\nthing\n") }
+    it { is_expected.to contain_file('/etc/rdbduprunner/rdb-excludes/other').
+                          with('owner' => 'bob', 'group' => 'jim', 'mode' => '0644').
+                          with_content("other\nthings\n") }
   end
 end
