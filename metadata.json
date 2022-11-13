@@ -6,7 +6,8 @@
   "license": "Apache-2.0",
   "source": "",
   "dependencies": [
-    {"name":"puppetlabs-stdlib","version_requirement":">= 1.0.0"},
+    // the following isn't a joke, they added to_json and to_yaml in 4.20.0:
+    {"name":"puppetlabs-stdlib","version_requirement":">= 4.20.0"},
     {"name":"puppetlabs-concat","version_requirement":">= 1.0.0"},
     {"name":"puppetlabs-cron_core","version_requirement":">= 1.0.0"}
   ],
