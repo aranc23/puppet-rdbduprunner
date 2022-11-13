@@ -5,8 +5,9 @@ require 'spec_helper'
 describe 'rdbduprunner::autobackup' do
   let(:title) { 'namevar' }
   let(:params) do
-    {}
+    { 'destination' => '/tmp/backup' }
   end
+  let(:pre_condition) { 'include rdbduprunner' }
 
   on_supported_os.each do |os, os_facts|
     context "on #{os}" do
