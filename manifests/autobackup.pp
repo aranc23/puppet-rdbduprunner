@@ -100,14 +100,12 @@ define rdbduprunner::autobackup
     inplace           => $inplace,
     prerun            => $prerun,
     postrun           => $postrun,
-    paths             => $paths,
-    skips             => unique(sort(flatten(concat($skips, [ '/var/lib/mysql', '/var/lib/pgsql' ])))),
-    skipres           => unique(sort(flatten(concat($skipres, [ '^\/run\/media', '^\/var\/lib\/docker\/devicemapper' ])))),
-    excludes          => $excludes,
+    path              => $paths,
+    skip              => unique(sort(flatten(concat($skips, [ '/var/lib/mysql', '/var/lib/pgsql' ])))),
+    skipre            => unique(sort(flatten(concat($skipres, [ '^\/run\/media', '^\/var\/lib\/docker\/devicemapper' ])))),
+    exclude           => $excludes,
   }
   rdbduprunner::backupset { 'autobackup':
-    config_file => "${directory}/${title}.conf",
-    concat      => true,
     *           => $backupset,
   }
   file { '/root/.rdbduprunner.rc':
