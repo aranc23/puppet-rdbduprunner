@@ -40,6 +40,7 @@ describe 'rdbduprunner::autobackup' do
                                   'concat'      => true,
                                   'inplace'     => nil,
                                   'wholefile'   => false) }
+      it { is_expected.to contain_concat__fragment('backupdestination/namevar//etc/rdbduprunner/conf.d/namevar.conf') }
       it { is_expected.to contain_rdbduprunner__backupset('autobackup')
                             .with('host' => 'foo',
                                   'rtag'              => nil,
@@ -55,6 +56,7 @@ describe 'rdbduprunner::autobackup' do
                                   'excludes'          => [],
                                  )
       }
+      it { is_expected.to contain_concat__fragment('backupset|autobackup|/etc/rdbduprunner/conf.d/namevar.conf') }
       it { is_expected.to contain_file('/root/.rdbduprunner.rc')
                             .with('ensure' => 'link',
                                   'target' => '/etc/rdbduprunner.rc',
@@ -106,6 +108,7 @@ describe 'rdbduprunner::autobackup' do
                                 'concat'      => true,
                                 'inplace'     => false,
                                 'wholefile'   => true) }
+    it { is_expected.to contain_concat__fragment('backupdestination/data//etc/rdbduprunner/conf.d/sample.conf') }
     it { is_expected.to contain_rdbduprunner__backupset('autobackup')
                           .with('host' => 'example.com',
                                 'rtag'              => 'bad-idea',
@@ -121,6 +124,7 @@ describe 'rdbduprunner::autobackup' do
                                 'excludes'          => ['.junk'],
                                )
     }
+    it { is_expected.to contain_concat__fragment('backupset|autobackup|/etc/rdbduprunner/conf.d/sample.conf') }
     it { is_expected.to contain_file('/etc/cron.daily/rdbduprunner_autobackup_sample.sh')
                           .with('ensure' => 'absent')
     }
