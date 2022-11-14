@@ -96,29 +96,86 @@ define rdbduprunner::backupset
   Optional[Integer] $volsize = undef,
   Optional[Boolean] $wholefile = undef,
   Optional[String] $zfsbinary = undef,
+
+  # pluralized strings:
+  #Optional[Array[String]] $allowfs = undef,
+  Optional[Array[String]] $excludes = [],
+  Optional[Array[String]] $paths = [],
+  Optional[Array[String]] $skips = [],
+  #Optional[Variant[String,Array[String]]] $skipfstype = undef,
+  Optional[Array[String]] $skipres = [],
+  
 )
 {
   validate_re($config_file,'\.(yaml|yml)$', 'config file must end in yml or yaml')
+  if(length($excludes) > 0) {
+    notice("backupset excludes option is deprecated in favor of exclude")
+    if($exclude) {
+      $_exclude = unique(sort(flatten(concat([$exclude],$excludes))))
+    }
+    else {
+      $_exclude = $excludes
+    }
+  }
+  else {
+    $_exclude = $exclude
+  }
+  if(length($paths) > 0) {
+    notice("backupset paths option is deprecated in favor of path")
+    if($path) {
+      $_path = unique(sort(flatten(concat([$path],$paths))))
+    }
+    else {
+      $_path = $paths
+    }
+  }
+  else {
+    $_path = $path
+  }
+  if(length($skips) > 0) {
+    notice("backupset skips option is deprecated in favor of skip")
+    if($skip) {
+      $_skip = unique(sort(flatten(concat([$skip],$skips))))
+    }
+    else {
+      $_skip = $skips
+    }
+  }
+  else {
+    $_skip = $skip
+  }
+  if(length($skipres) > 0) {
+    notice("backupset skipres option is deprecated in favor of skipre")
+    if($skipre) {
+      $_skipre = unique(sort(flatten(concat([$skipre],$skipres))))
+    }
+    else {
+      $_skipre = $skipres
+    }
+  }
+  else {
+    $_skipre = $skipre
+  }
   $_backupset = {
     allowfs => $allowfs,
     backupdestination => $backupdestination,
     checksum => $checksum,
     disabled => $disabled,
     duplicitybinary => $duplicitybinary,
-    exclude => $exclude,
+    exclude => $_exclude,
     host => $host,
     inplace => $inplace,
     inventory => $inventory,
     maxage => $maxage,
     maxinc => $maxinc,
-    path => $path,
+    path => $_path,
     postrun => $postrun,
     prerun => $prerun,
     rdiffbackupbinary => $rdiffbackupbinary,
     rsyncbinary => $rsyncbinary,
-    skip => $skip,
+    skip => $_skip,
     skipfstype => $skipfstype,
-    skipre => $skipre,
+    skipre => $_skipre,
     sshcompress => $sshcompress,
     stats => $stats,
     tag => $rtag,
