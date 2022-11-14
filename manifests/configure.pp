@@ -39,17 +39,13 @@ class rdbduprunner::configure
     $tidy = $backupset_defaults + delete(delete($h,'tag'),'export')
     if( $h['export'] == true ) {
       @@rdbduprunner::backupset { $t:
-        config_file => $rdbduprunner::config_file,
-        concat      => true,
-        *           => $tidy,
-        tag         => $h['tag']
+        *   => $tidy,
+        tag => $h['tag']
       }
     }
     else {
       ::rdbduprunner::backupset { $t:
-        config_file => $rdbduprunner::config_file,
-        concat      => true,
-        *           => $tidy,
+        * => $tidy,
       }
     }
   }
@@ -58,9 +54,7 @@ class rdbduprunner::configure
   }
   $rdbduprunner::backupdestinations.each |String $t, Hash $h| {
     ::rdbduprunner::backupdestination { $t:
-      config_file => $rdbduprunner::config_file,
-      concat      => true,
-      *           => $backupdestination_defaults + $h,
+      * => $backupdestination_defaults + $h,
     }
   }
   file { "${rdbduprunner::config_dir}/excludes":
