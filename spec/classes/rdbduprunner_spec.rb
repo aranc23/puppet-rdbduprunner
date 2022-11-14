@@ -38,7 +38,9 @@ describe 'rdbduprunner' do
   end
   context 'with class params' do
     let(:params) do
-      { 'backupsets' => { 'test' => { 'paths' => [ '/usr' ], 'prerun' => '/bin/true' } },
+      {
+        'backupsets' => { 'namevar' => { 'paths' => [ '/usr' ], 'prerun' => '/bin/true' } },
+        'backupdestinations' => { 'namevar' => { 'path' => '/tmp/backups', 'backup_type' => 'duplicity' } },
         'rsync_tag_excludes' => { 'some' => [ 'some', 'thing' ] },
         'rdbdup_tag_excludes' => { 'some' => [ 'some', 'other', 'thing' ],
                                    'other' => ['other','things'] },
@@ -52,14 +54,16 @@ describe 'rdbduprunner' do
     it { is_expected.to contain_package('rdbduprunner') }
     it { is_expected.to contain_concat('/etc/rdbduprunner.rc').
                           with('owner' => 'bob', 'group' => 'jim', 'mode' => '0440' ) }
+    it { is_expected.to contain_rdbduprunner__backupset('namevar')
+                          .with('paths' => [ '/usr' ], 'prerun' => '/bin/true') }
+    it { is_expected.to contain_file('/etc/rdbduprunner/conf.d/backupset-namevar.conf') }
+    it { is_expected.to contain_rdbduprunner__backupdestination('namevar')
+                          .with('path' => '/tmp/backups', 'backup_type' => 'duplicity') }
+    it { is_expected.to contain_file('/etc/rdbduprunner/conf.d/backupdestination-namevar.conf') }
     it { is_expected.to contain_file('/etc/rdbduprunner/excludes').
                           with('ensure' => 'directory', 'owner' => 'bob', 'group' => 'jim', 'mode' => '0775', 'purge' => false) } 
     it { is_expected.to contain_file('/etc/rdbduprunner/rdb-excludes').
                           with('ensure' => 'directory', 'owner' => 'bob', 'group' => 'jim', 'mode' => '0775', 'purge' => false) }
-    it { is_expected.to contain_rdbduprunner__backupset('test').with(
-                          'paths' => ['/usr'],
-                          'prerun' => '/bin/true',
-                        ) }
     it { is_expected.to contain_file('/etc/rdbduprunner/excludes/some').
                           with('owner' => 'bob', 'group' => 'jim', 'mode' => '0664').
                           with_content("some\nthing\n") }
