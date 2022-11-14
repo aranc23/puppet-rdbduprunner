@@ -71,5 +71,84 @@ describe 'rdbduprunner' do
     it { is_expected.to contain_file('/etc/rdbduprunner/rdb-excludes/other').
                           with('owner' => 'bob', 'group' => 'jim', 'mode' => '0644').
                           with_content("other\nthings\n") }
+    
+  end
+  context 'cron_method cron.d' do
+    let(:params) do
+      { 'cron_method' => 'cron.d',
+        'cron_resource_name' => 'rdb',
+        'cmd' => '/bin/true',
+        'log_level' => 'debug',
+        'minute' => 4,
+        'hour' => 5,
+        'monthday' => 6,
+        'month' => 7,
+        'weekday' => 0,
+      }
+    end
+
+    it { should compile }
+    ['daily','monthly','weekly','hourly','yearly'].each do |p|
+      it { is_expected.to contain_file("/etc/cron.#{p}/rdb").
+                            with('ensure' => 'absent') }
+    end
+    it { is_expected.to contain_file("/etc/cron.d/rdb").
+                          with('ensure' => 'present',
+                               'owner' => 'root',
+                               'group' => 0,
+                               'mode' => '0644',
+                               'content' => "# Run rdbduprunner
+SHELL=/bin/bash
+PATH=/sbin:/bin:/usr/sbin:/usr/bin
+MAILTO=root
+4 5 6 7 0 root /bin/true
+") }
+
+    it { is_expected.to contain_cron('rdb').
+                          with('ensure' => 'absent') }
+  end
+
+  context 'cron_method cron' do
+    let(:params) do
+      { 'cron_method' => 'cron',
+        'executable' => '/usr/local/bin/rdbduprunner',
+        'log_level' => 'debug',
+        'minute' => 4,
+        'hour' => 5,
+        'monthday' => 6,
+        'month' => 7,
+        'weekday' => 0,
+      }
+    end
+
+    it { should compile }
+    ['daily','monthly','weekly','hourly','yearly'].each do |p|
+      it { is_expected.to contain_file("/etc/cron.#{p}/rdbduprunner").
+                            with('ensure' => 'absent') }
+    end
+    it { is_expected.to contain_file("/etc/cron.d/rdbduprunner").
+                          with('ensure' => 'absent') }
+    it { is_expected.to contain_cron('rdbduprunner').
+                          with('ensure' => 'present',
+                               'user' => 'root',
+                               'hour' => 5,
+                               'minute' => 4,
+                               'monthday' => 6,
+                               'month' => 7,
+                               'weekday' => 0,
+                               'command' => "test -x /usr/bin/keychain && eval $( /usr/bin/keychain --eval --quiet ) ; /usr/local/bin/rdbduprunner --level debug --notest >/dev/null 2>&1") }
+
+  end
+  ['daily','monthly','weekly','hourly','yearly'].each do |p|
+    context "cron_method anacron #{p}" do
+      let(:params) do
+        { 'anacron_frequency' => p,
+          'cron_method' => 'anacron',
+          'cron_resource_name' => 'thunk',
+        }
+      end
+      it { is_expected.to contain_file("/etc/cron.#{p}/thunk").
+                            with('ensure' => 'present') }
+    end
   end
 end
