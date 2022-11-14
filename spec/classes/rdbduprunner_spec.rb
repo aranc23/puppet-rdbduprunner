@@ -144,10 +144,9 @@ MAILTO=root
       let(:params) do
         { 'anacron_frequency' => p,
           'cron_method' => 'anacron',
-          'cron_resource_name' => 'thunk',
         }
       end
-      it { is_expected.to contain_file("/etc/cron.#{p}/thunk").
+      it { is_expected.to contain_file("/etc/cron.#{p}/rdbduprunner").
                             with('ensure' => 'present') }
     end
   end
