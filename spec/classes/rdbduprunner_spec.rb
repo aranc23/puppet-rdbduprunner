@@ -57,8 +57,6 @@ describe 'rdbduprunner' do
     it { is_expected.to contain_file('/etc/rdbduprunner/rdb-excludes').
                           with('ensure' => 'directory', 'owner' => 'bob', 'group' => 'jim', 'mode' => '0775', 'purge' => false) }
     it { is_expected.to contain_rdbduprunner__backupset('test').with(
-                          'config_file' => '/etc/rdbduprunner.rc',
-                          'concat' => true,
                           'paths' => ['/usr'],
                           'prerun' => '/bin/true',
                         ) }
