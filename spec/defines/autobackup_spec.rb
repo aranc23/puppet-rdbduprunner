@@ -50,13 +50,15 @@ describe 'rdbduprunner::autobackup' do
                                   'inplace'           => nil,
                                   'prerun'            => nil,
                                   'postrun'           => nil,
-                                  'paths'             => [],
-                                  'skips'             => [ '/var/lib/mysql', '/var/lib/pgsql' ],
-                                  'skipres'           => [ '^\/run\/media', '^\/var\/lib\/docker\/devicemapper' ],
-                                  'excludes'          => [],
+                                  'path'              => [],
+                                  'skip'              => [ '/var/lib/mysql', '/var/lib/pgsql' ],
+                                  'skipre'            => [ '^\/run\/media', '^\/var\/lib\/docker\/devicemapper' ],
+                                  'exclude'           => [],
                                  )
       }
-      it { is_expected.to contain_concat__fragment('backupset|autobackup|/etc/rdbduprunner/conf.d/namevar.conf') }
+      it { is_expected.to contain_file('/etc/rdbduprunner/conf.d/backupset-autobackup.yaml') }
+      it { is_expected.to contain_file('/etc/rdbduprunner/conf.d/backupset-autobackup.conf')
+                            .with('ensure' => 'absent') }
       it { is_expected.to contain_file('/root/.rdbduprunner.rc')
                             .with('ensure' => 'link',
                                   'target' => '/etc/rdbduprunner.rc',
@@ -118,15 +120,11 @@ describe 'rdbduprunner::autobackup' do
                                 'inplace'           => false,
                                 'prerun'            => '/bin/true',
                                 'postrun'           => '/bin/false',
-                                'paths'             => ['/usr/bin'],
-                                'skips'             => [ '/test', '/var/lib/mysql', '/var/lib/pgsql' ].sort,
-                                'skipres'           => [ '^/test', '^\/run\/media', '^\/var\/lib\/docker\/devicemapper' ].sort,
-                                'excludes'          => ['.junk'],
+                                'path'              => ['/usr/bin'],
+                                'skip'              => [ '/test', '/var/lib/mysql', '/var/lib/pgsql' ].sort,
+                                'skipre'            => [ '^/test', '^\/run\/media', '^\/var\/lib\/docker\/devicemapper' ].sort,
+                                'exclude'           => ['.junk'],
                                )
-    }
-    it { is_expected.to contain_concat__fragment('backupset|autobackup|/etc/rdbduprunner/conf.d/sample.conf') }
-    it { is_expected.to contain_file('/etc/cron.daily/rdbduprunner_autobackup_sample.sh')
-                          .with('ensure' => 'absent')
     }
   end
   context "file related options" do
