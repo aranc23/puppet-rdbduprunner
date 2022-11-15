@@ -1,4 +1,4 @@
-# @summary creates one backupset definition in specified file, used by the main module and ::backup and ::autobackup helpers
+# @summary creates one backupset definition in specified file, used by the main module and ::autobackup helpers
 #
 # @param owner
 #    set most/some files to this user or uid
@@ -11,51 +11,101 @@
 #
 # @param config_file
 #    config file in which to create the backupset definition
-#
-# @param concat
-#   instead of creating a file, use concat to add to file with concat::fragment
-# @param host
-#   sets parameter of the same name in the backupset, although there is no default for the define, rdbduprunner uses localhost if it isn't set
-# @param disabled
-#   sets parameter of the same name in the backupset
-# @param backupdestination
-#   sets parameter of the same name in the backupset
-# @param inventory
-#   sets parameter of the same name in the backupset
-# @param inplace
-#   sets parameter of the same name in the backupset
-# @param checksum
-#   sets parameter of the same name in the backupset
-# @param wholefile
-#   sets parameter of the same name in the backupset
-# @param stats
-#   sets parameter of the same name in the backupset
-# @param prerun
-#   sets parameter of the same name in the backupset
-# @param postrun
-#   sets parameter of the same name in the backupset
-# @param maxinc
-#   sets parameter of the same name in the backupset
+#    must end in .yml or .yaml
 # @param allowfs
-#   sets parameter of the same name in the backupset
-# @param paths
-#   for each entry in this array, create a Path X statement in backupset
-# @param excludes
-#   for each entry in this array, create a Exclude X statement in backupset
-# @param skips
-#   for each entry in this array, create a Skip X statement in backupset
-# @param skipres
-#   for each entry in this array, create a SkipRE X statement in backupset
-# @param ensure the usual present/absent magic
+#   sets parameter of the same name in backupset
+#   see rdbduprunner docs for details
+# @param backupdestination
+#   sets parameter of the same name in backupset
+#   see rdbduprunner docs for details
+# @param checksum
+#   sets parameter of the same name in backupset
+#   see rdbduprunner docs for details
+# @param disabled
+#   sets parameter of the same name in backupset
+#   see rdbduprunner docs for details
+# @param duplicitybinary
+#   sets parameter of the same name in backupset
+#   see rdbduprunner docs for details
+# @param exclude
+#   sets parameter of the same name in backupset
+#   see rdbduprunner docs for details
+# @param host
+#   sets parameter of the same name in backupset
+#   see rdbduprunner docs for details
+# @param inplace
+#   sets parameter of the same name in backupset
+#   see rdbduprunner docs for details
+# @param inventory
+#   sets parameter of the same name in backupset
+#   see rdbduprunner docs for details
+# @param maxage
+#   sets parameter of the same name in backupset
+#   see rdbduprunner docs for details
+# @param maxinc
+#   sets parameter of the same name in backupset
+#   see rdbduprunner docs for details
+# @param path
+#   sets parameter of the same name in backupset
+#   see rdbduprunner docs for details
+# @param postrun
+#   sets parameter of the same name in backupset
+#   see rdbduprunner docs for details
+# @param prerun
+#   sets parameter of the same name in backupset
+#   see rdbduprunner docs for details
+# @param rdiffbackupbinary
+#   sets parameter of the same name in backupset
+#   see rdbduprunner docs for details
+# @param rsyncbinary
+#   sets parameter of the same name in backupset
+#   see rdbduprunner docs for details
+# @param skip
+#   sets parameter of the same name in backupset
+#   see rdbduprunner docs for details
+# @param skipfstype
+#   sets parameter of the same name in backupset
+#   see rdbduprunner docs for details
+# @param skipre
+#   sets parameter of the same name in backupset
+#   see rdbduprunner docs for details
+# @param sshcompress
+#   sets parameter of the same name in backupset
+#   see rdbduprunner docs for details
+# @param stats
+#   sets parameter of the same name in backupset
+#   see rdbduprunner docs for details
 # @param rtag
-#   override the tag in the backupset configuration, called rtag because tag is reserved
+#   sets tag parameter in backupset
+#   see rdbduprunner docs for details
+# @param trickle
+#   sets parameter of the same name in backupset
+#   see rdbduprunner docs for details
+# @param tricklebinary
+#   sets parameter of the same name in backupset
+#   see rdbduprunner docs for details
+# @param useagent
+#   sets parameter of the same name in backupset
+#   see rdbduprunner docs for details
+# @param verbosity
+#   sets parameter of the same name in backupset
+#   see rdbduprunner docs for details
+# @param volsize
+#   sets parameter of the same name in backupset
+#   see rdbduprunner docs for details
+# @param wholefile
+#   sets parameter of the same name in backupset
+#   see rdbduprunner docs for details
+# @param zfsbinary
+#   sets parameter of the same name in backupset
+#   see rdbduprunner docs for details
 #
 # @example add a backupset for a host to a config file in conf.d
 #   rdbduprunner::backupset { 'badhost':
 #     host => 'badhost',
 #     inventory => false,
-#     paths => ['data'],
-#     excludes => ['not_backed_up'],
+#     path => ['data'],
+#     exclude => ['not_backed_up'],
 #   }
 #
 define rdbduprunner::backupset
