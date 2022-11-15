@@ -14,6 +14,9 @@ describe 'rdbduprunner::backup' do
       let(:pre_condition) { 'include rdbduprunner' }
 
       it { is_expected.to compile }
+      it { is_expected.to contain_file("/etc/rdbduprunner/conf.d/rdbduprunner-backup.conf") }
+      it { is_expected.to contain_file("/etc/cron.daily/rdbduprunner_backup.sh")
+                            .with('ensure' => 'absent') }
     end
   end
 end
