@@ -2,7 +2,6 @@
 #
 # @param destination
 #   where to write the backups, used in the backupset
-# @param ensure the usual present/absent magic
 # @param owner
 #   user uid to create configuration file as
 # @param group
