@@ -60,7 +60,6 @@
 #
 define rdbduprunner::backupset
 (
-  Enum['present','absent'] $ensure = 'present',
   Variant[String,Integer] $owner   = 'root',
   Variant[String,Integer] $group   = 0,
   String $mode                     = '0440',
@@ -192,7 +191,6 @@ define rdbduprunner::backupset
     ensure => absent,
   }
   file { $config_file:
-    ensure  => $ensure,
     owner   => $owner,
     group   => $group,
     mode    => $mode,
