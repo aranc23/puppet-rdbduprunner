@@ -5,7 +5,6 @@ class rdbduprunner::service
 {
   $executable = $rdbduprunner::executable
   $config_file = $rdbduprunner::config_file
-  $log_level = $rdbduprunner::log_level
   $hour     = $rdbduprunner::hour
   $minute   = $rdbduprunner::minute
   $monthday = $rdbduprunner::monthday
