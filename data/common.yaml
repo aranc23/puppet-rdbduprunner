@@ -21,22 +21,3 @@ lookup_options:
       sort_merged_arrays: true
       knockout_prefix: '---'
 
-rdbduprunner::packages: ['rdbduprunner']
-rdbduprunner::owner: root
-rdbduprunner::group: 0
-rdbduprunner::mode: '0440'
-rdbduprunner::config_dir: '/etc/rdbduprunner'
-rdbduprunner::config_file: '/etc/rdbduprunner.rc'
-rdbduprunner::backupsets: {}
-rdbduprunner::backupdestinations: {}
-rdbduprunner::excludepath: ~
-rdbduprunner::default_skips: []
-rdbduprunner::default_skipres: []
-rdbduprunner::cron_method: 'anacron'
-rdbduprunner::anacron_frequency: 'daily'
-rdbduprunner::cron_resource_name: 'rdbduprunner'
-rdbduprunner::systemd_service_name: 'rdbduprunner'
-rdbduprunner::log_level: 'info'
-rdbduprunner::cmd: 'test -x /usr/bin/keychain && eval $( /usr/bin/keychain --eval --quiet ) ; <%= @executable %> --level <%= @log_level %> --notest >/dev/null 2>&1'
-rdbduprunner::logrotate: 'present'
-rdbduprunner::purge_excludes: false
