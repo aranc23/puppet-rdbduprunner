@@ -187,7 +187,7 @@ define rdbduprunner::backupset
     volsize => $volsize,
     wholefile => $wholefile,
     zfsbinary => $zfsbinary,
-  }
+  }.filter |$k,$v| { $v =~ NotUndef }
 
   file { regsubst($config_file,'\.(yaml|yml)$','.conf'):
     ensure => absent,
