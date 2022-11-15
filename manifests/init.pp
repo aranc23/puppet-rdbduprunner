@@ -20,55 +20,8 @@
 #    configuration directory (typically /etc/rdbduprunner)
 #
 # @param config_file
-#    config file to manage
-#
-# @param zfsbinary
-#    sets global rdbduprunner parameter of the same name
-#
-# @param defaultbackupdestination
-#    sets global rdbduprunner parameter of the same name
-#
-# @param excludepath
-#    sets global rdbduprunner parameter of the same name but does not change where this module creates exclude files! (don't use this)
-#
-# @param maxprocs
-#    sets global rdbduprunner parameter of the same name
-#
-# @param maxinc
-#    sets global rdbduprunner parameter of the same name
-#
-# @param allowfs
-#    sets global rdbduprunner parameter of the same name
-#
-# @param duplicitybinary
-#    path to duplicity
-#
-# @param rdiffbackupbinary
-#    path to rdiff-backup
-#
-# @param rsyncbinary
-#    path to rsync
-#
-# @param lockfile
-#    do not use this, not sure what it does
-#
-# @param useagent
-#    passes --use-agent to duplicity
-#
-# @param tempdir
-#    tries to convince underlying backup software to use this directory for temp files
-#
-# @param maxwait
-#    sets global rdbduprunner parameter of the same name
-#
-# @param inplace
-#    sets global rdbduprunner parameter of the same name
-#
-# @param checksum
-#    sets global rdbduprunner parameter of the same name
-#
-# @param wholefile
-#    sets global rdbduprunner parameter of the same name
+#    config file to manage, don't change this
+#    must end in .yaml or .yml
 #
 # @param default_skips
 #    adds these to the skips array in backup sets, kind of useless, may be removed
@@ -104,14 +57,10 @@
 # @param weekday
 #   used in the cron.d and traditional cron entries
 #
-# @param log_level Enum['debug','info','notice','warning','error','critical','alert','emergency']
-#   passed to rdbduprunner as is to determine verbosity of log output
 # @param cmd [String]
 #   how to invoke rdbduprunner, passed through inline_template to substitute the path to rdbduprunner, etc.
 # @param executable
-#   where to put rdbduprunner, typically /usr/bin/rdbduprunner
-# @param executable_source
-#   where to get the simple rdbduprunner script
+#   where to find rdbduprunner
 # @param rsync_tag_excludes Hash[String,Array[String]]
 #   replaces static files in /etc/rdbduprunner/excludes, keyed by "tag" and then a list of excludes
 #   => { 'a-lnx005.divms.uiowa.edu-home-accx' => [ 'hidden_stuff', 'DVDs' ] }
@@ -125,16 +74,127 @@
 # @param backupdestinations
 #   creates backupdestination definitions, refer to rdbduprunner documentation for specifics
 #
-# @param rsync_tag_excludes
-#   creates files in the "excludes" directory, named after the tag referenced, see examples
-#
-# @param rdbdup_tag_excludes
-#   creates files in the "rdb-excludes" directory, named after the tag referenced, see examples
-#
 # @param logrotate
 #   add a logrotate script for rdbduprunner logs
 # @param purge_excludes
 #   purge non-managed files from the exclude directories (rdb-excludes and excludes)
+# @param allowfs
+#   sets parameter of the same name in global
+#   see rdbduprunner docs for details
+# @param awsaccesskeyid
+#   sets parameter of the same name in global
+#   see rdbduprunner docs for details
+# @param awssecretaccesskey
+#   sets parameter of the same name in global
+#   see rdbduprunner docs for details
+# @param backupdestination
+#   sets parameter of the same name in global
+#   see rdbduprunner docs for details
+# @param backupset
+#   sets parameter of the same name in global
+#   see rdbduprunner docs for details
+# @param checksum
+#   sets parameter of the same name in global
+#   see rdbduprunner docs for details
+# @param defaultbackupdestination
+#   sets parameter of the same name in global
+#   see rdbduprunner docs for details
+# @param duplicitybinary
+#   sets parameter of the same name in global
+#   see rdbduprunner docs for details
+# @param encryptkey
+#   sets parameter of the same name in global
+#   see rdbduprunner docs for details
+# @param excludepath
+#   sets parameter of the same name in global
+#   see rdbduprunner docs for details
+# @param facility
+#   sets parameter of the same name in global
+#   see rdbduprunner docs for details
+# @param gpgpassphrase
+#   sets parameter of the same name in global
+#   see rdbduprunner docs for details
+# @param inplace
+#   sets parameter of the same name in global
+#   see rdbduprunner docs for details
+# @param level
+#   sets parameter of the same name in global
+#   see rdbduprunner docs for details
+# @param localhost
+#   sets parameter of the same name in global
+#   see rdbduprunner docs for details
+# @param maxage
+#   sets parameter of the same name in global
+#   see rdbduprunner docs for details
+# @param maxinc
+#   sets parameter of the same name in global
+#   see rdbduprunner docs for details
+# @param maxprocs
+#   sets parameter of the same name in global
+#   see rdbduprunner docs for details
+# @param maxwait
+#   sets parameter of the same name in global
+#   see rdbduprunner docs for details
+# @param postrun
+#   sets parameter of the same name in global
+#   see rdbduprunner docs for details
+# @param prerun
+#   sets parameter of the same name in global
+#   see rdbduprunner docs for details
+# @param rdiffbackupbinary
+#   sets parameter of the same name in global
+#   see rdbduprunner docs for details
+# @param rsyncbinary
+#   sets parameter of the same name in global
+#   see rdbduprunner docs for details
+# @param signkey
+#   sets parameter of the same name in global
+#   see rdbduprunner docs for details
+# @param skip
+#   sets parameter of the same name in global
+#   see rdbduprunner docs for details
+# @param skipfstype
+#   sets parameter of the same name in global
+#   see rdbduprunner docs for details
+# @param skipre
+#   sets parameter of the same name in global
+#   see rdbduprunner docs for details
+# @param sshcompress
+#   sets parameter of the same name in global
+#   see rdbduprunner docs for details
+# @param stats
+#   sets parameter of the same name in global
+#   see rdbduprunner docs for details
+# @param tempdir
+#   sets parameter of the same name in global
+#   see rdbduprunner docs for details
+# @param trickle
+#   sets parameter of the same name in global
+#   see rdbduprunner docs for details
+# @param tricklebinary
+#   sets parameter of the same name in global
+#   see rdbduprunner docs for details
+# @param useagent
+#   sets parameter of the same name in global
+#   see rdbduprunner docs for details
+# @param verbosity
+#   sets parameter of the same name in global
+#   see rdbduprunner docs for details
+# @param volsize
+#   sets parameter of the same name in global
+#   see rdbduprunner docs for details
+# @param wholefile
+#   sets parameter of the same name in global
+#   see rdbduprunner docs for details
+# @param zfsbinary
+#   sets parameter of the same name in global
+#   see rdbduprunner docs for details
+# @param zfscreate
+#   sets parameter of the same name in global
+#   see rdbduprunner docs for details
+# @param zfssnapshot
+#   sets parameter of the same name in global
+#   see rdbduprunner docs for details
 # @example Basic usage
 #  include rdbduprunner
 #
@@ -158,9 +218,9 @@
 #  rdbduprunner::backupsets:
 #    lss_backups:
 #      inventory: true
-#      skips:
+#      skip:
 #        - /boot
-#      excludes:
+#      exclude:
 #        - not_backed_up
 #
 # @example Configuring a per-host-filesystem exclude file
@@ -171,69 +231,129 @@
 #
 class rdbduprunner
 (
-  Array[String] $packages,
-  Variant[String,Integer] $owner,
-  Variant[String,Integer] $group,
-  String $mode,
-  String $config_dir,
-  String $config_file,
+  Array[String] $packages = ['rdbduprunner'],
+  Variant[String,Integer] $owner = 'root',
+  Variant[String,Integer] $group = 0,
+  String $mode = '0440',
+  String $config_dir = '/etc/rdbduprunner',
+  String $config_file = '/etc/rdbduprunner/rdbduprunner.yaml',
+
   # the following are global rdbduprunner config options
-  Optional[String]     $zfsbinary = undef,
-  Optional[String]     $defaultbackupdestination = undef,
-  Optional[String]     $excludepath = undef,
-  Optional[Integer]     $maxprocs = undef,
-  Optional[Integer]     $maxinc = undef,
-  Optional[Array[String]]     $allowfs = [],
-  Optional[String]     $duplicitybinary = undef,
-  Optional[String]     $rdiffbackupbinary = undef,
-  Optional[String]     $rsyncbinary = undef,
-  Optional[String]     $lockfile = undef,
-  Optional[Boolean]     $useagent = undef,
-  Optional[String]     $tempdir = undef,
-  Optional[Integer]     $maxwait = undef,
-  Optional[Boolean] $inplace = undef,
+  Optional[Variant[String,Array[String]]] $allowfs = undef,
+  Optional[String] $awsaccesskeyid = undef,
+  Optional[String] $awssecretaccesskey = undef,
   Optional[Boolean] $checksum = undef,
-  Optional[Boolean] $wholefile = undef,
+  Optional[String] $defaultbackupdestination = undef,
+  Optional[Stdlib::UnixPath] $duplicitybinary = undef,
+  Optional[String] $encryptkey = undef,
+  Optional[String] $excludepath = undef,
+  Optional[String] $facility = undef,
+  Optional[String] $gpgpassphrase = undef,
+  Optional[Boolean] $inplace = undef,
+  Optional[String] $level = undef,
+  Optional[String] $localhost = undef,
+  Optional[String] $maxage = undef,
+  Optional[Integer] $maxinc = undef,
+  Optional[Integer] $maxprocs = undef,
+  Optional[Integer] $maxwait = undef,
+  Optional[String] $postrun = undef,
+  Optional[String] $prerun = undef,
+  Optional[Stdlib::UnixPath] $rdiffbackupbinary = undef,
+  Optional[Stdlib::UnixPath] $rsyncbinary = undef,
+  Optional[String] $signkey = undef,
+  Optional[Variant[String,Array[String]]] $skip = undef,
+  Optional[Variant[String,Array[String]]] $skipfstype = undef,
+  Optional[Variant[String,Array[String]]] $skipre = undef,
+  Optional[Boolean] $sshcompress = undef,
   Optional[Boolean] $stats = undef,
+  Optional[String] $tempdir = undef,
+  Optional[Integer] $trickle = undef,
+  Optional[Stdlib::UnixPath] $tricklebinary = undef,
+  Optional[Boolean] $useagent = undef,
+  Optional[Integer] $verbosity = undef,
+  Optional[Integer] $volsize = undef,
+  Optional[Boolean] $wholefile = undef,
+  Optional[Stdlib::UnixPath] $zfsbinary = undef,
+  Optional[Boolean] $zfscreate = undef,
+  Optional[Boolean] $zfssnapshot = undef,
   Hash[String,Struct[{
-    zfscreate                => Optional[Boolean],
-    zfssnapshot              => Optional[Boolean],
-    inplace                  => Optional[Boolean],
-    checksum                 => Optional[Boolean],
-    wholefile                => Optional[Boolean],
+    allowfs => Optional[Variant[String,Array[String]]],
+    awsaccesskeyid => Optional[String],
+    awssecretaccesskey => Optional[String],
+    busted => Optional[Boolean],
+    checksum => Optional[Boolean],
+    duplicitybinary => Optional[Stdlib::UnixPath],
+    encryptkey => Optional[String],
+    gpgpassphrase => Optional[String],
+    inplace => Optional[Boolean],
+    maxage => Optional[String],
+    maxinc => Optional[Integer],
+    minfree => Optional[Integer],
+    path => String,
+    percentused => Optional[Integer],
+    postrun => Optional[String],
+    prerun => Optional[String],
+    rdiffbackupbinary => Optional[Stdlib::UnixPath],
+    rsyncbinary => Optional[Stdlib::UnixPath],
+    signkey => Optional[String],
+    skip => Optional[Variant[String,Array[String]]],
+    skipfstype => Optional[Variant[String,Array[String]]],
+    skipre => Optional[Variant[String,Array[String]]],
+    sshcompress => Optional[Boolean],
+    stats => Optional[Boolean],
+    trickle => Optional[Integer],
+    tricklebinary => Optional[Stdlib::UnixPath],
     backup_type              => Optional[Enum['rsync','duplicity','rdiff-backup']],
-    path                     => String,
-    percentused              => Optional[Integer],
-    minfree                  => Optional[Integer],
-    maxinc                   => Optional[Integer],
-  }]] $backupdestinations,
+    useagent => Optional[Boolean],
+    verbosity => Optional[Integer],
+    volsize => Optional[Integer],
+    wholefile => Optional[Boolean],
+    zfsbinary => Optional[Stdlib::UnixPath],
+    zfscreate => Optional[Boolean],
+    zfssnapshot => Optional[Boolean],
+  }]] $backupdestinations = {},
   Hash[String,Struct[{
-    config_file              => Optional[String],
-    host                     => Optional[String],
-    paths                    => Optional[Array[String]],
-    skips                    => Optional[Array[String]],
-    skipres                  => Optional[Array[String]],
-    excludes                 => Optional[Array[String]],
-    allowfs                  => Optional[Array[String]],
-    backupdestination        => Optional[String],
-    inventory                => Optional[Boolean],
-    inplace                  => Optional[Boolean],
-    checksum                 => Optional[Boolean],
-    wholefile                => Optional[Boolean],
-    prerun                   => Optional[String],
-    postrun                  => Optional[String],
-    rtag                     => Optional[String],
-    disabled                 => Optional[Boolean],
-    maxinc                   => Optional[Integer],
-    export                   => Optional[Boolean],
-    tag                      => Optional[String],
-  }]] $backupsets,
-  Array[String] $default_skips,
-  Array[String] $default_skipres,
-  Enum['cron','cron.d','anacron','systemd','none'] $cron_method,
-  Enum['monthly','weekly','daily','hourly','yearly'] $anacron_frequency,
-  String $cron_resource_name,
-  String $systemd_service_name,
+    allowfs => Optional[Variant[String,Array[String]]],
+    backupdestination => Optional[String],
+    checksum => Optional[Boolean],
+    disabled => Optional[Boolean],
+    duplicitybinary => Optional[Stdlib::UnixPath],
+    exclude => Optional[Variant[String,Array[String]]],
+    excludes => Optional[Variant[String,Array[String]]],
+    host => Optional[Stdlib::Host],
+    inplace => Optional[Boolean],
+    inventory => Optional[Boolean],
+    maxage => Optional[String],
+    maxinc => Optional[Integer],
+    path => Optional[Variant[String,Array[String]]],
+    paths => Optional[Variant[String,Array[String]]],
+    postrun => Optional[String],
+    prerun => Optional[String],
+    rdiffbackupbinary => Optional[Stdlib::UnixPath],
+    rsyncbinary => Optional[Stdlib::UnixPath],
+    skip => Optional[Variant[String,Array[String]]],
+    skips => Optional[Variant[String,Array[String]]],
+    skipfstype => Optional[Variant[String,Array[String]]],
+    skipre => Optional[Variant[String,Array[String]]],
+    skipres => Optional[Variant[String,Array[String]]],
+    sshcompress => Optional[Boolean],
+    stats => Optional[Boolean],
+    rtag => Optional[String],
+    trickle => Optional[Integer],
+    tricklebinary => Optional[Stdlib::UnixPath],
+    useagent => Optional[Boolean],
+    verbosity => Optional[Integer],
+    volsize => Optional[Integer],
+    wholefile => Optional[Boolean],
+    zfsbinary => Optional[Stdlib::UnixPath],
+  }]] $backupsets = {},
+
+  Array[String] $default_skips = [],
+  Array[String] $default_skipres = [],
+  Enum['cron','cron.d','anacron','systemd','none'] $cron_method = 'anacron',
+  Enum['monthly','weekly','daily','hourly','yearly'] $anacron_frequency = 'daily',
+  String $cron_resource_name = 'rdbduprunner',
+  String $systemd_service_name = 'rdbduprunner',
   # there are a lot of ways to specify these to the cron type and I'm
   # not going to try to determine the type spec used
   $hour        = fqdn_rand(4),
@@ -241,19 +361,19 @@ class rdbduprunner
   $monthday    = undef,
   $month       = undef,
   $weekday     = undef,
-  Enum['debug','info','notice','warning','error','critical','alert','emergency'] $log_level,
-  String $cmd,
+  String $cmd = 'test -x /usr/bin/keychain && eval $( /usr/bin/keychain --eval --quiet ) ; <%= @executable %> --notest >/dev/null 2>&1',
   String $executable = '/usr/bin/rdbduprunner',
-  Optional[Stdlib::Filesource] $executable_source = 'puppet:///modules/rdbduprunner/rdbduprunner',
   Hash[String,Array[String]] $rsync_tag_excludes = {},
   Hash[String,Array[String]] $rdbdup_tag_excludes = {},
-  Enum['present','absent'] $logrotate,
-  Boolean $purge_excludes,
+  Enum['present','absent'] $logrotate = 'present',
+  Boolean $purge_excludes = false,
 ) {
 
   contain rdbduprunner::install
   contain rdbduprunner::configure
   contain rdbduprunner::service
+
+  validate_re($config_file,'\.(yaml|yml)$', 'config file must end in yml or yaml')
 
   Class['::rdbduprunner::install']
   -> Class['::rdbduprunner::configure']

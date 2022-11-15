@@ -85,8 +85,9 @@ describe 'rdbduprunner::autobackup' do
                                 'inplace'     => false,
                                 'wholefile'   => true) }
     it { is_expected.not_to contain_concat__fragment('backupdestination/data//etc/rdbduprunner/conf.d/sample.conf') }
-    it { is_expected.not_to contain_file('/etc/rdbduprunner/conf.d/backupdestination-data.yaml') }
-    it { is_expected.to contain_file('/etc/rdbduprunner/conf.d/backupdestination-data.conf') }
+    it { is_expected.to contain_file('/etc/rdbduprunner/conf.d/backupdestination-data.yaml') }
+    it { is_expected.to contain_file('/etc/rdbduprunner/conf.d/backupdestination-data.conf')
+                          .with('ensure' => 'absent') }
 
     it { is_expected.to contain_rdbduprunner__backupset('autobackup')
                           .with('host' => 'example.com',

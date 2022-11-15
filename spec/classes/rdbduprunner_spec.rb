@@ -17,7 +17,7 @@ describe 'rdbduprunner' do
                                  'owner' => 'root',
                                  'group' => 0,
                                  'mode' => '0550',
-                                 'content' => "#!/bin/sh\ntest -x /usr/bin/keychain && eval $( /usr/bin/keychain --eval --quiet ) ; /usr/bin/rdbduprunner --level info --notest >/dev/null 2>&1\n") }
+                                 'content' => "#!/bin/sh\ntest -x /usr/bin/keychain && eval $( /usr/bin/keychain --eval --quiet ) ; /usr/bin/rdbduprunner --notest >/dev/null 2>&1\n") }
       ['monthly','weekly','hourly','yearly'].each do |p|
         it { is_expected.to contain_file("/etc/cron.#{p}/rdbduprunner").
                               with('ensure' => 'absent') }
@@ -52,8 +52,10 @@ describe 'rdbduprunner' do
     it { should compile }
     # it is always called rdbduprunner now:
     it { is_expected.to contain_package('rdbduprunner') }
-    it { is_expected.to contain_concat('/etc/rdbduprunner.rc').
-                          with('owner' => 'bob', 'group' => 'jim', 'mode' => '0440' ) }
+    it { is_expected.to contain_file('/etc/rdbduprunner.rc')
+                          .with('ensure' => 'absent') }
+    it { is_expected.to contain_file('/etc/rdbduprunner/rdbduprunner.yaml')
+                          .with('owner' => 'bob', 'group' => 'jim', 'mode' => '0440' ) }
     it { is_expected.to contain_rdbduprunner__backupset('namevar')
                           .with('paths' => [ '/usr' ], 'prerun' => '/bin/true') }
     it { is_expected.to contain_file('/etc/rdbduprunner/conf.d/backupset-namevar.conf') }
@@ -80,7 +82,6 @@ describe 'rdbduprunner' do
       { 'cron_method' => 'cron.d',
         'cron_resource_name' => 'rdb',
         'cmd' => '/bin/true',
-        'log_level' => 'debug',
         'minute' => 4,
         'hour' => 5,
         'monthday' => 6,
@@ -114,7 +115,6 @@ MAILTO=root
     let(:params) do
       { 'cron_method' => 'cron',
         'executable' => '/usr/local/bin/rdbduprunner',
-        'log_level' => 'debug',
         'minute' => 4,
         'hour' => 5,
         'monthday' => 6,
@@ -138,7 +138,7 @@ MAILTO=root
                                'monthday' => 6,
                                'month' => 7,
                                'weekday' => 0,
-                               'command' => "test -x /usr/bin/keychain && eval $( /usr/bin/keychain --eval --quiet ) ; /usr/local/bin/rdbduprunner --level debug --notest >/dev/null 2>&1") }
+                               'command' => "test -x /usr/bin/keychain && eval $( /usr/bin/keychain --eval --quiet ) ; /usr/local/bin/rdbduprunner --notest >/dev/null 2>&1") }
 
   end
   ['daily','monthly','weekly','hourly','yearly'].each do |p|
@@ -151,5 +151,93 @@ MAILTO=root
       it { is_expected.to contain_file("/etc/cron.#{p}/rdbduprunner").
                             with('ensure' => 'present') }
     end
+  end
+  context 'with global params' do
+    let(:params) do
+      {
+        'allowfs' => 'zfs',
+        'awsaccesskeyid' => 'forb',
+        'awssecretaccesskey' => 'secret',
+        'checksum' => true,
+        'defaultbackupdestination' => 'def',
+        'duplicitybinary' => '/bin/dup',
+        'encryptkey' => 'aran-cox',
+        'excludepath' => '/path',
+        'facility' => 'daemon',
+        'gpgpassphrase' => "secret2",
+        'inplace' => false,
+        'level' => 'user1',
+        'localhost' => 'example.com',
+        'maxage' => '2d',
+        'maxinc' => 4,
+        'maxprocs' => 2,
+        'maxwait' => 1000,
+        'postrun' => '/bin/echo',
+        'prerun' => '/bin/true',
+        'rdiffbackupbinary' => '/bin/rdiff-backup',
+        'rsyncbinary' => '/bin/rsync',
+        'signkey' => '0x4444',
+        'skip' => ['some','stuff'],
+        'skipfstype' => ['zfs'],
+        'skipre' => '.+',
+        'sshcompress' => true,
+        'stats' => false,
+        'tempdir' => '/var/tmp',
+        'trickle' => 5,
+        'tricklebinary' => '/bin/trickle',
+        'useagent' => true,
+        'verbosity' => 7,
+        'volsize' => 2000,
+        'wholefile' => false,
+        'zfsbinary' => '/sbin/zfs',
+        'zfscreate' => true,
+        'zfssnapshot' => false,
+      }
+    end
+    it { is_expected.to contain_file('/etc/rdbduprunner/rdbduprunner.yaml')
+                          .with_content("---
+allowfs: zfs
+awsaccesskeyid: forb
+awssecretaccesskey: secret
+checksum: true
+defaultbackupdestination: def
+duplicitybinary: \"/bin/dup\"
+encryptkey: aran-cox
+excludepath: \"/path\"
+facility: daemon
+gpgpassphrase: secret2
+inplace: false
+level: user1
+localhost: example.com
+maxage: 2d
+maxinc: 4
+maxprocs: 2
+maxwait: 1000
+postrun: \"/bin/echo\"
+prerun: \"/bin/true\"
+rdiffbackupbinary: \"/bin/rdiff-backup\"
+rsyncbinary: \"/bin/rsync\"
+signkey: '0x4444'
+skip:
+- some
+- stuff
+skipfstype:
+- zfs
+skipre: \".+\"
+sshcompress: true
+stats: false
+tempdir: \"/var/tmp\"
+trickle: 5
+tricklebinary: \"/bin/trickle\"
+useagent: true
+verbosity: 7
+volsize: 2000
+wholefile: false
+zfsbinary: \"/sbin/zfs\"
+zfscreate: true
+zfssnapshot: false
+")
+    }
+    
   end
 end
