@@ -100,6 +100,9 @@
 #   sets parameter of the same name in backupset
 #   see rdbduprunner docs for details
 #
+# @param file_ensure
+#   when set to absent, remove the config file instead of creating it
+# 
 # @example add a backupset for a host to a config file in conf.d
 #   rdbduprunner::backupset { 'badhost':
 #     host => 'badhost',
@@ -153,7 +156,8 @@ define rdbduprunner::backupset
   Optional[Array[String]] $skips = [],
   #Optional[Variant[String,Array[String]]] $skipfstype = undef,
   Optional[Array[String]] $skipres = [],
-  
+
+  Enum['present','absent'] $file_ensure = 'present',
 )
 {
   include rdbduprunner
@@ -243,6 +247,7 @@ define rdbduprunner::backupset
     ensure => absent,
   }
   file { $config_file:
+    ensure  => $file_ensure,
     owner   => $owner,
     group   => $group,
     mode    => $mode,

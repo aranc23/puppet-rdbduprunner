@@ -119,7 +119,19 @@ volsize: 1000
 wholefile: false
 zfsbinary: \"/usr/sbin/zfs\"
 ")
-      }    
+      }
+    end
+    context "absent" do
+      let(:params) do
+        {
+          'file_ensure' => 'absent'
+        }
+      end
+      it { is_expected.to contain_file("/etc/rdbduprunner/conf.d/backupset-namevar.conf")
+                            .with('ensure' => 'absent') }
+
+      it { is_expected.to contain_file("/etc/rdbduprunner/conf.d/backupset-namevar.yaml")
+                            .with('ensure' => 'absent') }
       
     end
   end
