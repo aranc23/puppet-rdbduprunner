@@ -21,7 +21,7 @@ describe 'rdbduprunner::backupset' do
                                    'owner'   => 'root',
                                    'group'   => 0,
                                    'mode'    => '0440',
-                                   'content' => "--- {}\n",
+                                   'content' => "---\nbackupset:\n  namevar: {}\n",
                                  )
       }    
       it { is_expected.not_to contain_concat__fragment('backupset|namevar|/etc/rdbduprunner/conf.d/backupset-namevar.yaml') }
@@ -75,49 +75,51 @@ describe 'rdbduprunner::backupset' do
                               'group'   => 0,
                               'mode'    => '0440',
                               'content' => "---
-allowfs:
-- ext
-- ext2
-backupdestination: toaster
-checksum: true
-disabled: true
-duplicitybinary: \"/usr/local/bin/duplicity\"
-exclude:
-- '1'
-- '3'
-- '4'
-host: example.com
-inplace: false
-inventory: true
-maxage: 4d
-maxinc: 4
-path:
-- \"/usr\"
-- \"/var/\"
-postrun: o
-prerun: r
-rdiffbackupbinary: \"/usr/local/bin/rdiff-backup\"
-rsyncbinary: \"/local/rsync\"
-skip:
-- a
-- not
-- this
-skipfstype: zfs
-skipre:
-- '1'
-- '2'
-- '3'
-- '4'
-sshcompress: true
-stats: false
-tag: tickle
-trickle: 5
-tricklebinary: \"/bin/trickle\"
-useagent: true
-verbosity: 5
-volsize: 1000
-wholefile: false
-zfsbinary: \"/usr/sbin/zfs\"
+backupset:
+  namevar:
+    allowfs:
+    - ext
+    - ext2
+    backupdestination: toaster
+    checksum: true
+    disabled: true
+    duplicitybinary: \"/usr/local/bin/duplicity\"
+    exclude:
+    - '1'
+    - '3'
+    - '4'
+    host: example.com
+    inplace: false
+    inventory: true
+    maxage: 4d
+    maxinc: 4
+    path:
+    - \"/usr\"
+    - \"/var/\"
+    postrun: o
+    prerun: r
+    rdiffbackupbinary: \"/usr/local/bin/rdiff-backup\"
+    rsyncbinary: \"/local/rsync\"
+    skip:
+    - a
+    - not
+    - this
+    skipfstype: zfs
+    skipre:
+    - '1'
+    - '2'
+    - '3'
+    - '4'
+    sshcompress: true
+    stats: false
+    tag: tickle
+    trickle: 5
+    tricklebinary: \"/bin/trickle\"
+    useagent: true
+    verbosity: 5
+    volsize: 1000
+    wholefile: false
+    zfsbinary: \"/usr/sbin/zfs\"
 ")
       }
     end

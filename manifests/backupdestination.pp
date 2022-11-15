@@ -167,7 +167,7 @@ define rdbduprunner::backupdestination
   include rdbduprunner
   validate_re($config_file,'\.(yaml|yml)$', 'config file must end in yml or yaml')
 
-  $_backupdestination = {
+  $_backupdestination = { backupdestination => { $title => {
     allowfs => $allowfs,
     awsaccesskeyid => $awsaccesskeyid,
     awssecretaccesskey => $awssecretaccesskey,
@@ -202,7 +202,7 @@ define rdbduprunner::backupdestination
     zfsbinary => $zfsbinary,
     zfscreate => $zfscreate,
     zfssnapshot => $zfssnapshot,
-  }.filter |$k,$v| { $v =~ NotUndef }
+  }.filter |$k,$v| { $v =~ NotUndef } } }
 
   file { regsubst($config_file,'\.(yaml|yml)$','.conf'):
     ensure => absent,

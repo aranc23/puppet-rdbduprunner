@@ -211,7 +211,7 @@ define rdbduprunner::backupset
   else {
     $_skipre = $skipre
   }
-  $_backupset = {
+  $_backupset = { backupset => { $title => {
     allowfs => $allowfs,
     backupdestination => $backupdestination,
     checksum => $checksum,
@@ -241,7 +241,7 @@ define rdbduprunner::backupset
     volsize => $volsize,
     wholefile => $wholefile,
     zfsbinary => $zfsbinary,
-  }.filter |$k,$v| { $v =~ NotUndef }
+  }.filter |$k,$v| { $v =~ NotUndef } } }
 
   file { regsubst($config_file,'\.(yaml|yml)$','.conf'):
     ensure => absent,
