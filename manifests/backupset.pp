@@ -111,7 +111,8 @@ define rdbduprunner::backupset
   if(length($excludes) > 0) {
     notice("backupset excludes option is deprecated in favor of exclude")
     if($exclude) {
-      $_exclude = unique(sort(flatten(concat([$exclude],$excludes))))
+      # don't sort or otherwise mangle this one as order may matter?
+      $_exclude = flatten(concat([$exclude],$excludes))
     }
     else {
       $_exclude = $excludes
