@@ -20,6 +20,8 @@ describe 'rdbduprunner::autobackup' do
       
       it { is_expected.to compile }
       it { is_expected.not_to contain_concat('/etc/rdbduprunner/conf.d/namevar.conf') }
+      it { is_expected.to contain_file('/etc/rdbduprunner/conf.d/namevar.conf')
+                                .with('ensure' => 'absent') }
       it { is_expected.not_to contain_concat__fragment('comment in /etc/rdbduprunner/conf.d/namevar.conf') }
       it { is_expected.not_to contain_concat__fragment('empty line in /etc/rdbduprunner/conf.d/namevar.conf') }
       it { is_expected.to contain_rdbduprunner__backupdestination('namevar')
@@ -103,6 +105,9 @@ describe 'rdbduprunner::autobackup' do
                                 'skipre'            => [ '^/test', '^\/run\/media', '^\/var\/lib\/docker\/devicemapper' ].sort,
                                 'exclude'           => ['.junk'],
                                )
+    }
+    it { is_expected.to contain_file('/etc/cron.daily/rdbduprunner_autobackup_sample.sh')
+                          .with('ensure' => 'absent')
     }
   end
 end
