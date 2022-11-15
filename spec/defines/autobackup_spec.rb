@@ -28,8 +28,9 @@ describe 'rdbduprunner::autobackup' do
                                   'inplace'     => nil,
                                   'wholefile'   => false) }
       it { is_expected.not_to contain_concat__fragment('backupdestination/namevar//etc/rdbduprunner/conf.d/namevar.conf') }
-      it { is_expected.not_to contain_file('/etc/rdbduprunner/conf.d/backupdestination-namevar.yaml') }
-      it { is_expected.to contain_file('/etc/rdbduprunner/conf.d/backupdestination-namevar.conf') }
+      it { is_expected.to contain_file('/etc/rdbduprunner/conf.d/backupdestination-namevar.yaml') }
+      it { is_expected.to contain_file('/etc/rdbduprunner/conf.d/backupdestination-namevar.conf')
+                            .with('ensure' => 'absent') }
       it { is_expected.to contain_rdbduprunner__backupset('autobackup')
                             .with('host' => 'foo',
                                   'rtag'              => nil,
