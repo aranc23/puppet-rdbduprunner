@@ -49,7 +49,7 @@ define rdbduprunner::autobackup
   Variant[String,Integer] $group   = $rdbduprunner::group,
   String $mode                     = $rdbduprunner::mode,
   String $directory                = "${rdbduprunner::config_dir}/conf.d",
-  String $host = undef,
+  Optional[String] $host = undef,
   Variant[String,Undef] $rtag      = undef,
   Optional[Boolean] $disabled   = undef,
   Variant[String,Undef] $backupdestination = $title,
