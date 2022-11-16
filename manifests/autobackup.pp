@@ -44,7 +44,7 @@ define rdbduprunner::autobackup
   # path to write backups to
   String $destination,
   String $directory                = "${rdbduprunner::config_dir}/conf.d",
-  String $host                     = $::hostname,
+  String $host = undef,
   Variant[String,Undef] $rtag      = undef,
   Optional[Boolean] $disabled   = undef,
   Variant[String,Undef] $backupdestination = $title,
