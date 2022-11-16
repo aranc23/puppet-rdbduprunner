@@ -40,7 +40,7 @@ describe 'rdbduprunner' do
     let(:params) do
       {
         'backupsets' => { 'namevar' => { 'paths' => [ '/usr' ], 'prerun' => '/bin/true' } },
-        'backupdestinations' => { 'namevar' => { 'path' => '/tmp/backups', 'backup_type' => 'duplicity' } },
+        'backupdestinations' => { 'namevar' => { 'path' => '/tmp/backups', 'type' => 'duplicity' } },
         'rsync_tag_excludes' => { 'some' => [ 'some', 'thing' ] },
         'rdbdup_tag_excludes' => { 'some' => [ 'some', 'other', 'thing' ],
                                    'other' => ['other','things'] },
@@ -55,13 +55,23 @@ describe 'rdbduprunner' do
     it { is_expected.to contain_file('/etc/rdbduprunner.rc')
                           .with('ensure' => 'absent') }
     it { is_expected.to contain_file('/etc/rdbduprunner/rdbduprunner.yaml')
-                          .with('owner' => 'bob', 'group' => 'jim', 'mode' => '0440' ) }
-    it { is_expected.to contain_rdbduprunner__backupset('namevar')
-                          .with('paths' => [ '/usr' ], 'prerun' => '/bin/true') }
-    it { is_expected.to contain_file('/etc/rdbduprunner/conf.d/backupset-namevar.conf') }
-    it { is_expected.to contain_rdbduprunner__backupdestination('namevar')
-                          .with('path' => '/tmp/backups', 'backup_type' => 'duplicity') }
-    it { is_expected.to contain_file('/etc/rdbduprunner/conf.d/backupdestination-namevar.conf') }
+                          .with('owner' => 'bob', 'group' => 'jim', 'mode' => '0440',
+                                'content' => "---
+backupdestination:
+  namevar:
+    path: \"/tmp/backups\"
+    type: duplicity
+backupset:
+  namevar:
+    paths:
+    - \"/usr\"
+    prerun: \"/bin/true\"
+")
+                          }
+    it { is_expected.not_to contain_rdbduprunner__backupset('namevar') }
+    it { is_expected.not_to contain_file('/etc/rdbduprunner/conf.d/backupset-namevar.conf') }
+    it { is_expected.not_to contain_rdbduprunner__backupdestination('namevar') }
+    it { is_expected.not_to contain_file('/etc/rdbduprunner/conf.d/backupdestination-namevar.conf') }
     it { is_expected.to contain_file('/etc/rdbduprunner/excludes').
                           with('ensure' => 'directory', 'owner' => 'bob', 'group' => 'jim', 'mode' => '0775', 'purge' => false) } 
     it { is_expected.to contain_file('/etc/rdbduprunner/rdb-excludes').
@@ -192,6 +202,8 @@ MAILTO=root
         'zfsbinary' => '/sbin/zfs',
         'zfscreate' => true,
         'zfssnapshot' => false,
+        'backupdestinations' => { 'd' => { 'path' => '/t' } },
+        'backupsets' => { 'a' => { 'path' => ['/x','/y'] } },
       }
     end
     it { is_expected.to contain_file('/etc/rdbduprunner/rdbduprunner.yaml')
@@ -236,6 +248,14 @@ wholefile: false
 zfsbinary: \"/sbin/zfs\"
 zfscreate: true
 zfssnapshot: false
+backupdestination:
+  d:
+    path: \"/t\"
+backupset:
+  a:
+    path:
+    - \"/x\"
+    - \"/y\"
 ")
     }
     

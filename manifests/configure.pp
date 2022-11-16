@@ -41,6 +41,8 @@ class rdbduprunner::configure
     zfsbinary => $rdbduprunner::zfsbinary,
     zfscreate => $rdbduprunner::zfscreate,
     zfssnapshot => $rdbduprunner::zfssnapshot,
+    backupdestination => $rdbduprunner::backupdestinations,
+    backupset => $rdbduprunner::backupsets,
   }.filter |$k,$v| { $v =~ NotUndef }
 
   file { '/etc/rdbduprunner.rc':
@@ -53,19 +55,6 @@ class rdbduprunner::configure
     content => to_yaml($_global),
   }
 
-  $rdbduprunner::backupsets.each |String $t, Hash $h| {
-    ::rdbduprunner::backupset { $t:
-      * => $h,
-    }
-  }
-  $backupdestination_defaults = {
-    backup_type => 'rsync',
-  }
-  $rdbduprunner::backupdestinations.each |String $t, Hash $h| {
-    ::rdbduprunner::backupdestination { $t:
-      * => $backupdestination_defaults + $h,
-    }
-  }
   file { "${rdbduprunner::config_dir}/excludes":
     ensure => directory,
     owner  => $rdbduprunner::owner,
