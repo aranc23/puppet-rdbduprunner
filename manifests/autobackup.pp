@@ -88,9 +88,6 @@ define rdbduprunner::autobackup
   rdbduprunner::backupset { 'autobackup':
     *           => $backupset,
   }
-  file { '/root/.rdbduprunner.rc':
-    ensure  => absent,
-  }
   # rely on the rdbduprunner module to run rdbduprunner
   file { "/etc/cron.daily/rdbduprunner_autobackup_${title}.sh":
     ensure => absent,

@@ -11,7 +11,11 @@ describe 'rdbduprunner::configure' do
       it { is_expected.to compile }
       it { is_expected.not_to contain_concat('/etc/rdbduprunner.rc') }
       it { is_expected.to contain_file('/etc/rdbduprunner.rc')
-                                .with('ensure' => 'absent' ) }
+                            .with('ensure' => 'absent',
+                                  'backup' => true) }
+      it { is_expected.to contain_file('/root/.rdbduprunner.rc')
+                            .with('ensure' => 'absent',
+                                  'backup' => true) }
       it { is_expected.to contain_file('/etc/rdbduprunner/rdbduprunner.yaml' ) }
       it { is_expected.not_to contain_concat__fragment('include conf.d') }
       it { is_expected.to contain_file('/etc/rdbduprunner/excludes')

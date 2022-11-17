@@ -45,8 +45,9 @@ class rdbduprunner::configure
     backupset => $rdbduprunner::backupsets,
   }.filter |$k,$v| { $v =~ NotUndef }
 
-  file { '/etc/rdbduprunner.rc':
+  file { ['/etc/rdbduprunner.rc','/root/.rdbduprunner.rc']:
     ensure => absent,
+    backup => true,
   }
   file { $rdbduprunner::config_file:
     owner   => $rdbduprunner::owner,

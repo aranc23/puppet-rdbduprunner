@@ -21,7 +21,7 @@ describe 'rdbduprunner::autobackup' do
       it { is_expected.to compile }
       it { is_expected.not_to contain_concat('/etc/rdbduprunner/conf.d/namevar.conf') }
       it { is_expected.to contain_file('/etc/rdbduprunner/conf.d/namevar.conf')
-                                .with('ensure' => 'absent') }
+                            .with('ensure' => 'absent') }
       it { is_expected.not_to contain_concat__fragment('comment in /etc/rdbduprunner/conf.d/namevar.conf') }
       it { is_expected.not_to contain_concat__fragment('empty line in /etc/rdbduprunner/conf.d/namevar.conf') }
       it { is_expected.to contain_rdbduprunner__backupdestination('namevar')
@@ -34,7 +34,7 @@ describe 'rdbduprunner::autobackup' do
       it { is_expected.to contain_file('/etc/rdbduprunner/conf.d/backupdestination-namevar.conf')
                             .with('ensure' => 'absent') }
       it { is_expected.to contain_rdbduprunner__backupset('autobackup')
-                            .with('host' => 'foo',
+                            .with('host'              => nil,
                                   'rtag'              => nil,
                                   'disabled'          => nil,
                                   'backupdestination' => 'namevar',
@@ -51,63 +51,61 @@ describe 'rdbduprunner::autobackup' do
       it { is_expected.to contain_file('/etc/rdbduprunner/conf.d/backupset-autobackup.yaml') }
       it { is_expected.to contain_file('/etc/rdbduprunner/conf.d/backupset-autobackup.conf')
                             .with('ensure' => 'absent') }
-      it { is_expected.to contain_file('/root/.rdbduprunner.rc')
-                            .with('ensure' => 'absent') }
       it { is_expected.to contain_file('/etc/cron.daily/rdbduprunner_autobackup_namevar.sh')
                             .with('ensure' => 'absent')
       }
-    end
-  end
-  context "all options" do
-    let(:title) { 'sample' }
-    let(:params) do
-      { 'destination' => '/tmp/backup',
-        'host' => 'example.com',
-        'inplace' => false,
-        'wholefile' => true,
-        'backupdestination' => 'data',
-        'rtag' => 'bad-idea',
-        'disabled' => false,
-        'inventory' => false,
-        'prerun' => '/bin/true',
-        'postrun' => '/bin/false',
-        'paths' => ['/usr/bin'],
-        'skips' => ['/test'],
-        'skipres' => ['^/test'],
-        'excludes' => ['.junk'],
-      }
-    end
-    it { is_expected.to contain_file('/etc/rdbduprunner/conf.d/sample.conf')
-                          .with('ensure' => 'absent') }
-    it { is_expected.not_to contain_concat__fragment('comment in /etc/rdbduprunner/conf.d/sample.conf') }
-    it { is_expected.not_to contain_concat__fragment('empty line in /etc/rdbduprunner/conf.d/sample.conf') }
-    it { is_expected.to contain_rdbduprunner__backupdestination('data')
-                          .with('backup_type' => 'rsync',
-                                'path'        => '/tmp/backup',
-                                'inplace'     => false,
-                                'wholefile'   => true) }
-    it { is_expected.not_to contain_concat__fragment('backupdestination/data//etc/rdbduprunner/conf.d/sample.conf') }
-    it { is_expected.to contain_file('/etc/rdbduprunner/conf.d/backupdestination-data.yaml') }
-    it { is_expected.to contain_file('/etc/rdbduprunner/conf.d/backupdestination-data.conf')
-                          .with('ensure' => 'absent') }
+      context "all options" do
+        let(:title) { 'sample' }
+        let(:params) do
+          { 'destination' => '/tmp/backup',
+            'host' => 'example.com',
+            'inplace' => false,
+            'wholefile' => true,
+            'backupdestination' => 'data',
+            'rtag' => 'bad-idea',
+            'disabled' => false,
+            'inventory' => false,
+            'prerun' => '/bin/true',
+            'postrun' => '/bin/false',
+            'paths' => ['/usr/bin'],
+            'skips' => ['/test'],
+            'skipres' => ['^/test'],
+            'excludes' => ['.junk'],
+          }
+        end
+        it { is_expected.to contain_file('/etc/rdbduprunner/conf.d/sample.conf')
+                              .with('ensure' => 'absent') }
+        it { is_expected.not_to contain_concat__fragment('comment in /etc/rdbduprunner/conf.d/sample.conf') }
+        it { is_expected.not_to contain_concat__fragment('empty line in /etc/rdbduprunner/conf.d/sample.conf') }
+        it { is_expected.to contain_rdbduprunner__backupdestination('data')
+                              .with('backup_type' => 'rsync',
+                                    'path'        => '/tmp/backup',
+                                    'inplace'     => false,
+                                    'wholefile'   => true) }
+        it { is_expected.not_to contain_concat__fragment('backupdestination/data//etc/rdbduprunner/conf.d/sample.conf') }
+        it { is_expected.to contain_file('/etc/rdbduprunner/conf.d/backupdestination-data.yaml') }
+        it { is_expected.to contain_file('/etc/rdbduprunner/conf.d/backupdestination-data.conf')
+                              .with('ensure' => 'absent') }
 
-    it { is_expected.to contain_rdbduprunner__backupset('autobackup')
-                          .with('host' => 'example.com',
-                                'rtag'              => 'bad-idea',
-                                'disabled'          => false,
-                                'backupdestination' => 'data',
-                                'inventory'         => false,
-                                'inplace'           => false,
-                                'prerun'            => '/bin/true',
-                                'postrun'           => '/bin/false',
-                                'path'              => ['/usr/bin'],
-                                'skip'              => [ '/test', '/var/lib/mysql', '/var/lib/pgsql' ].sort,
-                                'skipre'            => [ '^/test', '^\/run\/media', '^\/var\/lib\/docker\/devicemapper' ].sort,
-                                'exclude'           => ['.junk'],
-                               )
-    }
-    it { is_expected.to contain_file('/etc/cron.daily/rdbduprunner_autobackup_sample.sh')
-                          .with('ensure' => 'absent')
-    }
+        it { is_expected.to contain_rdbduprunner__backupset('autobackup')
+                              .with('host' => 'example.com',
+                                    'rtag'              => 'bad-idea',
+                                    'disabled'          => false,
+                                    'backupdestination' => 'data',
+                                    'inventory'         => false,
+                                    'inplace'           => false,
+                                    'prerun'            => '/bin/true',
+                                    'postrun'           => '/bin/false',
+                                    'path'              => ['/usr/bin'],
+                                    'skip'              => [ '/test', '/var/lib/mysql', '/var/lib/pgsql' ].sort,
+                                    'skipre'            => [ '^/test', '^\/run\/media', '^\/var\/lib\/docker\/devicemapper' ].sort,
+                                    'exclude'           => ['.junk'],
+                                   )
+        }
+        it { is_expected.to contain_file('/etc/cron.daily/rdbduprunner_autobackup_sample.sh')
+                              .with('ensure' => 'absent')
+        }
+      end
+    end
   end
 end
