@@ -4,9 +4,14 @@
 #
 #
 #
-# @param packages
-#   install these perl packages to make rdbduprunner run
+# @param package
+#   install this package, presumably it's rdbduprunner
 #
+# @param package_ensure
+#   passed to the package ensure resource, for specifying specific version or latest
+#
+# param extra_packages
+#   install these extras, presumably to make rdbduprunner work
 # @param owner
 #    set most/some files to this user or uid
 #
@@ -231,7 +236,9 @@
 #
 class rdbduprunner
 (
-  Array[String] $packages = ['rdbduprunner'],
+  String $package = 'rdbduprunner',
+  String $package_ensure = 'present',
+  Array[String] $extra_packages = [],
   Variant[String,Integer] $owner = 'root',
   Variant[String,Integer] $group = 0,
   String $mode = '0440',
