@@ -56,6 +56,16 @@ class rdbduprunner::configure
     content => to_yaml($_global),
   }
 
+  if ($rdbduprunner::manage_conf_d) {
+    file { "${rdbduprunner::config_dir}/conf.d":
+      ensure  => directory,
+      owner   => $rdbduprunner::owner,
+      group   => $rdbduprunner::group,
+      mode    => '0755',
+      purge   => true,
+      recurse => true,
+    }
+  }
   file { "${rdbduprunner::config_dir}/excludes":
     ensure => directory,
     owner  => $rdbduprunner::owner,

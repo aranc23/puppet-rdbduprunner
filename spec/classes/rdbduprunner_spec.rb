@@ -34,6 +34,7 @@ describe 'rdbduprunner' do
                                  'source' => 'puppet:///modules/rdbduprunner/logrotate.d/rdbduprunner',
                                 ) }
       
+      it { is_expected.not_to contain_file('/etc/rdbduprunner/conf.d') }
     end
   end
   context 'with class params' do
@@ -46,6 +47,7 @@ describe 'rdbduprunner' do
                                    'other' => ['other','things'] },
         'owner' => "bob",
         'group' => "jim",
+        'manage_conf_d' => true,
       }
     end
 
@@ -85,7 +87,9 @@ backupset:
     it { is_expected.to contain_file('/etc/rdbduprunner/rdb-excludes/other').
                           with('owner' => 'bob', 'group' => 'jim', 'mode' => '0644').
                           with_content("other\nthings\n") }
-    
+    it { is_expected.to contain_file('/etc/rdbduprunner/conf.d')
+                          .with('owner' => 'bob', 'group' => 'jim', 'mode' => '0755',
+                                'ensure' => 'directory', 'recurse' => 'true', 'purge' => true) }
   end
   context 'cron_method cron.d' do
     let(:params) do

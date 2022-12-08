@@ -24,6 +24,9 @@
 # @param config_dir
 #    configuration directory (typically /etc/rdbduprunner)
 #
+# @param manage_conf_d
+#    manage the $config_dir/conf.d directory, by recursively purging
+#
 # @param config_file
 #    config file to manage, don't change this
 #    must end in .yaml or .yml
@@ -243,6 +246,7 @@ class rdbduprunner
   Variant[String,Integer] $group = 0,
   String $mode = '0440',
   String $config_dir = '/etc/rdbduprunner',
+  Boolean $manage_conf_d = false,
   String $config_file = '/etc/rdbduprunner/rdbduprunner.yaml',
 
   # the following are global rdbduprunner config options
