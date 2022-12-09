@@ -71,6 +71,7 @@ describe 'rdbduprunner::autobackup' do
             'skips' => ['/test'],
             'skipres' => ['^/test'],
             'excludes' => ['.junk'],
+            'backup_type' => 'rdiff-backup',
           }
         end
         it { is_expected.to contain_file('/etc/rdbduprunner/conf.d/sample.conf')
@@ -78,7 +79,7 @@ describe 'rdbduprunner::autobackup' do
         it { is_expected.not_to contain_concat__fragment('comment in /etc/rdbduprunner/conf.d/sample.conf') }
         it { is_expected.not_to contain_concat__fragment('empty line in /etc/rdbduprunner/conf.d/sample.conf') }
         it { is_expected.to contain_rdbduprunner__backupdestination('data')
-                              .with('backup_type' => 'rsync',
+                              .with('backup_type' => 'rdiff-backup',
                                     'path'        => '/tmp/backup',
                                     'inplace'     => false,
                                     'wholefile'   => true) }

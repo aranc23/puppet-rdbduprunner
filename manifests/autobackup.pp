@@ -30,6 +30,8 @@
 #   for each entry in this array, create a Skip X statement in backupset
 # @param skipres
 #   for each entry in this array, create a SkipRE X statement in backupset
+# @param backup_type
+#   set the backup "type" of the destination
 #
 # @example Backing up to lss share
 #   rdbduprunner::autobackup { 'lss':
@@ -57,6 +59,7 @@ define rdbduprunner::autobackup
   Array[String] $excludes          = [],
   Optional[Boolean] $inplace = undef,
   Optional[Boolean] $wholefile = false,
+  Enum['rsync','duplicity','rdiff-backup'] $backup_type = 'rsync',
 )
 {
   include ::rdbduprunner
@@ -66,7 +69,7 @@ define rdbduprunner::autobackup
     ensure => absent,
   }
   rdbduprunner::backupdestination { $backupdestination:
-    backup_type => 'rsync',
+    backup_type => $backup_type,
     path        => $destination,
     inplace     => $inplace,
     wholefile   => $wholefile,
