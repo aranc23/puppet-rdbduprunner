@@ -81,7 +81,8 @@ backupdestination:
           'busted' => true,
           'checksum' => true,
           'duplicitybinary' => '/usr/local/bin/duplicity',
-          'inplace' => false,
+          'inplace' => true,
+          'sparse' => true,
           'maxage' => '4d',
           'maxinc' => 4,
           'path' => '/tmp/backup',
@@ -125,7 +126,7 @@ backupdestination:
     busted: true
     checksum: true
     duplicitybinary: \"/usr/local/bin/duplicity\"
-    inplace: false
+    inplace: true
     maxage: 4d
     maxinc: 4
     path: \"/tmp/backup\"
@@ -140,6 +141,7 @@ backupdestination:
     skipre:
     - '4'
     - '3'
+    sparse: true
     sshcompress: true
     stats: false
     trickle: 5

@@ -18,6 +18,8 @@
 #   sets parameter of the same name in the backupset
 # @param inplace
 #   sets parameter of the same name in the backupset
+# @param sparse
+#   sets parameter of the same name in the backupset
 # @param prerun
 #   sets parameter of the same name in the backupset
 # @param postrun
@@ -58,6 +60,7 @@ define rdbduprunner::autobackup
   Array[String] $skipres           = [ '^\/run\/media', '^\/var\/lib\/docker\/devicemapper' ],
   Array[String] $excludes          = [],
   Optional[Boolean] $inplace = undef,
+  Optional[Boolean] $sparse = undef,
   Optional[Boolean] $wholefile = false,
   Enum['rsync','duplicity','rdiff-backup'] $backup_type = 'rsync',
 )
@@ -81,6 +84,7 @@ define rdbduprunner::autobackup
     backupdestination => $backupdestination,
     inventory         => $inventory,
     inplace           => $inplace,
+    sparse            => $sparse,
     prerun            => $prerun,
     postrun           => $postrun,
     path              => $paths,

@@ -179,7 +179,8 @@ MAILTO=root
         'excludepath' => '/path',
         'facility' => 'daemon',
         'gpgpassphrase' => "secret2",
-        'inplace' => false,
+        'inplace' => true,
+        'sparse' => false,
         'level' => 'user1',
         'localhost' => 'example.com',
         'maxage' => '2d',
@@ -222,7 +223,7 @@ encryptkey: aran-cox
 excludepath: \"/path\"
 facility: daemon
 gpgpassphrase: secret2
-inplace: false
+inplace: true
 level: user1
 localhost: example.com
 maxage: 2d
@@ -240,6 +241,7 @@ skip:
 skipfstype:
 - zfs
 skipre: \".+\"
+sparse: false
 sshcompress: true
 stats: false
 tempdir: \"/var/tmp\"

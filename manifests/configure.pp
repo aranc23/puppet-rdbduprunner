@@ -29,6 +29,7 @@ class rdbduprunner::configure
     skip => $rdbduprunner::skip,
     skipfstype => $rdbduprunner::skipfstype,
     skipre => $rdbduprunner::skipre,
+    sparse => $rdbduprunner::sparse,
     sshcompress => $rdbduprunner::sshcompress,
     stats => $rdbduprunner::stats,
     tempdir => $rdbduprunner::tempdir,

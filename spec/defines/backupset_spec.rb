@@ -39,6 +39,7 @@ describe 'rdbduprunner::backupset' do
           'excludes' => ['3','4',],
           'host' => 'example.com',
           'inplace' => false,
+          'sparse' => false,
           'inventory' => true,
           'maxage' => '4d',
           'maxinc' => 4,
@@ -110,6 +111,7 @@ backupset:
     - '2'
     - '3'
     - '4'
+    sparse: false
     sshcompress: true
     stats: false
     tag: tickle

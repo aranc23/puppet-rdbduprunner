@@ -167,6 +167,9 @@
 # @param skipre
 #   sets parameter of the same name in global
 #   see rdbduprunner docs for details
+# @param sparse
+#   sets parameter of the same name in global
+#   see rdbduprunner docs for details
 # @param sshcompress
 #   sets parameter of the same name in global
 #   see rdbduprunner docs for details
@@ -275,6 +278,7 @@ class rdbduprunner
   Optional[Variant[String,Array[String]]] $skip = undef,
   Optional[Variant[String,Array[String]]] $skipfstype = undef,
   Optional[Variant[String,Array[String]]] $skipre = undef,
+  Optional[Boolean] $sparse = undef,
   Optional[Boolean] $sshcompress = undef,
   Optional[Boolean] $stats = undef,
   Optional[String] $tempdir = undef,
@@ -310,6 +314,7 @@ class rdbduprunner
     skip => Optional[Variant[String,Array[String]]],
     skipfstype => Optional[Variant[String,Array[String]]],
     skipre => Optional[Variant[String,Array[String]]],
+    sparse => Optional[Boolean],
     sshcompress => Optional[Boolean],
     stats => Optional[Boolean],
     trickle => Optional[Integer],
@@ -347,6 +352,7 @@ class rdbduprunner
     skipfstype => Optional[Variant[String,Array[String]]],
     skipre => Optional[Variant[String,Array[String]]],
     skipres => Optional[Variant[String,Array[String]]],
+    sparse => Optional[Boolean],
     sshcompress => Optional[Boolean],
     stats => Optional[Boolean],
     'tag' => Optional[String],
