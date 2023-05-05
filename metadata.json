@@ -1,6 +1,6 @@
 {
   "name": "aranc23-rdbduprunner",
-  "version": "0.1.7",
+  "version": "0.5.11",
   "author": "Aran Cox",
   "summary": "Install and configure rdbduprunner",
   "license": "Apache-2.0",
@@ -47,7 +47,7 @@
       "operatingsystem": "Fedora",
       "operatingsystemrelease": [
           "36",
-          "37"
+          "38"
       ]
     }
   ],
