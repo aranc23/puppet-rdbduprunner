@@ -7,16 +7,16 @@
 ### Classes
 
 * [`rdbduprunner`](#rdbduprunner): install and configure rdbduprunner
-* [`rdbduprunner::backup`](#rdbduprunnerbackup): create a backupdestination and multiple backupsets, one per paths
-* [`rdbduprunner::configure`](#rdbduprunnerconfigure): used by rdbduprunner to configure the software
-* [`rdbduprunner::install`](#rdbduprunnerinstall): used by rdbduprunner to install the software
-* [`rdbduprunner::service`](#rdbduprunnerservice): used by rdbduprunner to configure the service
+* [`rdbduprunner::backup`](#rdbduprunner--backup): create a backupdestination and multiple backupsets, one per paths
+* [`rdbduprunner::configure`](#rdbduprunner--configure): used by rdbduprunner to configure the software
+* [`rdbduprunner::install`](#rdbduprunner--install): used by rdbduprunner to install the software
+* [`rdbduprunner::service`](#rdbduprunner--service): used by rdbduprunner to configure the service
 
 ### Defined types
 
-* [`rdbduprunner::autobackup`](#rdbduprunnerautobackup): creates one backupset and one backupdestination in conf.d
-* [`rdbduprunner::backupdestination`](#rdbduprunnerbackupdestination): create a backupdestination in specified file
-* [`rdbduprunner::backupset`](#rdbduprunnerbackupset): creates one backupset definition in specified file, used by the main module and ::backup and ::autobackup helpers
+* [`rdbduprunner::autobackup`](#rdbduprunner--autobackup): creates one backupset and one backupdestination in conf.d
+* [`rdbduprunner::backupdestination`](#rdbduprunner--backupdestination): create a backupdestination in specified file
+* [`rdbduprunner::backupset`](#rdbduprunner--backupset): creates one backupset definition in specified file, used by the main module and ::autobackup helpers
 
 ## Classes
 
@@ -60,9 +60,9 @@ rdbduprunner::backupdestination:
 rdbduprunner::backupsets:
   lss_backups:
     inventory: true
-    skips:
+    skip:
       - /boot
-    excludes:
+    exclude:
       - not_backed_up
 ```
 
@@ -79,227 +79,196 @@ rdbduprunner::rsync_tag_excludes:
 
 The following parameters are available in the `rdbduprunner` class:
 
-* [`packages`](#packages)
-* [`owner`](#owner)
-* [`group`](#group)
-* [`mode`](#mode)
-* [`config_dir`](#config_dir)
-* [`config_file`](#config_file)
-* [`zfsbinary`](#zfsbinary)
-* [`defaultbackupdestination`](#defaultbackupdestination)
-* [`excludepath`](#excludepath)
-* [`maxprocs`](#maxprocs)
-* [`maxinc`](#maxinc)
-* [`allowfs`](#allowfs)
-* [`duplicitybinary`](#duplicitybinary)
-* [`rdiffbackupbinary`](#rdiffbackupbinary)
-* [`rsyncbinary`](#rsyncbinary)
-* [`lockfile`](#lockfile)
-* [`useagent`](#useagent)
-* [`tempdir`](#tempdir)
-* [`maxwait`](#maxwait)
-* [`default_skips`](#default_skips)
-* [`default_skipres`](#default_skipres)
-* [`cron_method`](#cron_method)
-* [`anacron_frequency`](#anacron_frequency)
-* [`cron_resource_name`](#cron_resource_name)
-* [`systemd_service_name`](#systemd_service_name)
-* [`hour`](#hour)
-* [`minute`](#minute)
-* [`monthday`](#monthday)
-* [`month`](#month)
-* [`weekday`](#weekday)
-* [`log_level`](#log_level)
-* [`cmd`](#cmd)
-* [`executable`](#executable)
-* [`executable_source`](#executable_source)
-* [`rsync_tag_excludes`](#rsync_tag_excludes)
-* [`rdbdup_tag_excludes`](#rdbdup_tag_excludes)
-* [`backupsets`](#backupsets)
-* [`backupdestinations`](#backupdestinations)
-* [`rsync_tag_excludes`](#rsync_tag_excludes)
-* [`rdbdup_tag_excludes`](#rdbdup_tag_excludes)
-* [`logrotate`](#logrotate)
-* [`purge_excludes`](#purge_excludes)
+* [`package`](#-rdbduprunner--package)
+* [`package_ensure`](#-rdbduprunner--package_ensure)
+* [`extra_packages`](#-rdbduprunner--extra_packages)
+* [`owner`](#-rdbduprunner--owner)
+* [`group`](#-rdbduprunner--group)
+* [`mode`](#-rdbduprunner--mode)
+* [`config_dir`](#-rdbduprunner--config_dir)
+* [`manage_conf_d`](#-rdbduprunner--manage_conf_d)
+* [`config_file`](#-rdbduprunner--config_file)
+* [`default_skips`](#-rdbduprunner--default_skips)
+* [`default_skipres`](#-rdbduprunner--default_skipres)
+* [`cron_method`](#-rdbduprunner--cron_method)
+* [`anacron_frequency`](#-rdbduprunner--anacron_frequency)
+* [`cron_resource_name`](#-rdbduprunner--cron_resource_name)
+* [`systemd_service_name`](#-rdbduprunner--systemd_service_name)
+* [`hour`](#-rdbduprunner--hour)
+* [`minute`](#-rdbduprunner--minute)
+* [`monthday`](#-rdbduprunner--monthday)
+* [`month`](#-rdbduprunner--month)
+* [`weekday`](#-rdbduprunner--weekday)
+* [`cmd`](#-rdbduprunner--cmd)
+* [`executable`](#-rdbduprunner--executable)
+* [`rsync_tag_excludes`](#-rdbduprunner--rsync_tag_excludes)
+* [`rdbdup_tag_excludes`](#-rdbduprunner--rdbdup_tag_excludes)
+* [`logrotate`](#-rdbduprunner--logrotate)
+* [`purge_excludes`](#-rdbduprunner--purge_excludes)
+* [`allowfs`](#-rdbduprunner--allowfs)
+* [`awsaccesskeyid`](#-rdbduprunner--awsaccesskeyid)
+* [`awssecretaccesskey`](#-rdbduprunner--awssecretaccesskey)
+* [`backupdestinations`](#-rdbduprunner--backupdestinations)
+* [`backupsets`](#-rdbduprunner--backupsets)
+* [`checksum`](#-rdbduprunner--checksum)
+* [`defaultbackupdestination`](#-rdbduprunner--defaultbackupdestination)
+* [`duplicitybinary`](#-rdbduprunner--duplicitybinary)
+* [`encryptkey`](#-rdbduprunner--encryptkey)
+* [`excludepath`](#-rdbduprunner--excludepath)
+* [`facility`](#-rdbduprunner--facility)
+* [`gpgpassphrase`](#-rdbduprunner--gpgpassphrase)
+* [`inplace`](#-rdbduprunner--inplace)
+* [`level`](#-rdbduprunner--level)
+* [`localhost`](#-rdbduprunner--localhost)
+* [`maxage`](#-rdbduprunner--maxage)
+* [`maxinc`](#-rdbduprunner--maxinc)
+* [`maxprocs`](#-rdbduprunner--maxprocs)
+* [`maxwait`](#-rdbduprunner--maxwait)
+* [`postrun`](#-rdbduprunner--postrun)
+* [`prerun`](#-rdbduprunner--prerun)
+* [`rdiffbackupbinary`](#-rdbduprunner--rdiffbackupbinary)
+* [`rsyncbinary`](#-rdbduprunner--rsyncbinary)
+* [`signkey`](#-rdbduprunner--signkey)
+* [`skip`](#-rdbduprunner--skip)
+* [`skipfstype`](#-rdbduprunner--skipfstype)
+* [`skipre`](#-rdbduprunner--skipre)
+* [`sparse`](#-rdbduprunner--sparse)
+* [`sshcompress`](#-rdbduprunner--sshcompress)
+* [`stats`](#-rdbduprunner--stats)
+* [`tempdir`](#-rdbduprunner--tempdir)
+* [`trickle`](#-rdbduprunner--trickle)
+* [`tricklebinary`](#-rdbduprunner--tricklebinary)
+* [`useagent`](#-rdbduprunner--useagent)
+* [`verbosity`](#-rdbduprunner--verbosity)
+* [`volsize`](#-rdbduprunner--volsize)
+* [`wholefile`](#-rdbduprunner--wholefile)
+* [`zfsbinary`](#-rdbduprunner--zfsbinary)
+* [`zfscreate`](#-rdbduprunner--zfscreate)
+* [`zfssnapshot`](#-rdbduprunner--zfssnapshot)
 
-##### <a name="packages"></a>`packages`
+##### <a name="-rdbduprunner--package"></a>`package`
+
+Data type: `String`
+
+install this package, presumably it's rdbduprunner
+
+Default value: `'rdbduprunner'`
+
+##### <a name="-rdbduprunner--package_ensure"></a>`package_ensure`
+
+Data type: `String`
+
+passed to the package ensure resource, for specifying specific version or latest
+
+Default value: `'present'`
+
+##### <a name="-rdbduprunner--extra_packages"></a>`extra_packages`
 
 Data type: `Array[String]`
 
-install these perl packages to make rdbduprunner run
+install these extras, presumably to make rdbduprunner work
 
-##### <a name="owner"></a>`owner`
+Default value: `[]`
+
+##### <a name="-rdbduprunner--owner"></a>`owner`
 
 Data type: `Variant[String,Integer]`
 
 set most/some files to this user or uid
 
-##### <a name="group"></a>`group`
+Default value: `'root'`
+
+##### <a name="-rdbduprunner--group"></a>`group`
 
 Data type: `Variant[String,Integer]`
 
 set most/some files to this group or gid
 
-##### <a name="mode"></a>`mode`
+Default value: `0`
+
+##### <a name="-rdbduprunner--mode"></a>`mode`
 
 Data type: `String`
 
 set most/some files to this octal mode string
 
-##### <a name="config_dir"></a>`config_dir`
+Default value: `'0440'`
+
+##### <a name="-rdbduprunner--config_dir"></a>`config_dir`
 
 Data type: `String`
 
 configuration directory (typically /etc/rdbduprunner)
 
-##### <a name="config_file"></a>`config_file`
+Default value: `'/etc/rdbduprunner'`
+
+##### <a name="-rdbduprunner--manage_conf_d"></a>`manage_conf_d`
+
+Data type: `Boolean`
+
+manage the $config_dir/conf.d directory, by recursively purging
+
+Default value: `false`
+
+##### <a name="-rdbduprunner--config_file"></a>`config_file`
 
 Data type: `String`
 
-config file to manage
+config file to manage, don't change this
+must end in .yaml or .yml
 
-##### <a name="zfsbinary"></a>`zfsbinary`
+Default value: `'/etc/rdbduprunner/rdbduprunner.yaml'`
 
-Data type: `Optional[String]`
-
-sets global rdbduprunner parameter of the same name
-
-Default value: ``undef``
-
-##### <a name="defaultbackupdestination"></a>`defaultbackupdestination`
-
-Data type: `Optional[String]`
-
-sets global rdbduprunner parameter of the same name
-
-Default value: ``undef``
-
-##### <a name="excludepath"></a>`excludepath`
-
-Data type: `Optional[String]`
-
-sets global rdbduprunner parameter of the same name but does not change where this module creates exclude files! (don't use this)
-
-Default value: ``undef``
-
-##### <a name="maxprocs"></a>`maxprocs`
-
-Data type: `Optional[Integer]`
-
-sets global rdbduprunner parameter of the same name
-
-Default value: ``undef``
-
-##### <a name="maxinc"></a>`maxinc`
-
-Data type: `Optional[Integer]`
-
-sets global rdbduprunner parameter of the same name
-
-Default value: ``undef``
-
-##### <a name="allowfs"></a>`allowfs`
-
-Data type: `Optional[Array[String]]`
-
-sets global rdbduprunner parameter of the same name
-
-Default value: `[]`
-
-##### <a name="duplicitybinary"></a>`duplicitybinary`
-
-Data type: `Optional[String]`
-
-path to duplicity
-
-Default value: ``undef``
-
-##### <a name="rdiffbackupbinary"></a>`rdiffbackupbinary`
-
-Data type: `Optional[String]`
-
-path to rdiff-backup
-
-Default value: ``undef``
-
-##### <a name="rsyncbinary"></a>`rsyncbinary`
-
-Data type: `Optional[String]`
-
-path to rsync
-
-Default value: ``undef``
-
-##### <a name="lockfile"></a>`lockfile`
-
-Data type: `Optional[String]`
-
-do not use this, not sure what it does
-
-Default value: ``undef``
-
-##### <a name="useagent"></a>`useagent`
-
-Data type: `Optional[Boolean]`
-
-passes --use-agent to duplicity
-
-Default value: ``undef``
-
-##### <a name="tempdir"></a>`tempdir`
-
-Data type: `Optional[String]`
-
-tries to convince underlying backup software to use this directory for temp files
-
-Default value: ``undef``
-
-##### <a name="maxwait"></a>`maxwait`
-
-Data type: `Optional[Integer]`
-
-sets global rdbduprunner parameter of the same name
-
-Default value: ``undef``
-
-##### <a name="default_skips"></a>`default_skips`
+##### <a name="-rdbduprunner--default_skips"></a>`default_skips`
 
 Data type: `Array[String]`
 
 adds these to the skips array in backup sets, kind of useless, may be removed
 
-##### <a name="default_skipres"></a>`default_skipres`
+Default value: `[]`
+
+##### <a name="-rdbduprunner--default_skipres"></a>`default_skipres`
 
 Data type: `Array[String]`
 
 adds these to the skipres array in backup sets, kind of useless, may be removed
 
-##### <a name="cron_method"></a>`cron_method`
+Default value: `[]`
+
+##### <a name="-rdbduprunner--cron_method"></a>`cron_method`
 
 Data type: `Enum['cron','cron.d','anacron','systemd','none']`
 
 how to configure the invocation of rdbduprunner periodically
 systemd is not implemented and none configures none
 
-##### <a name="anacron_frequency"></a>`anacron_frequency`
+Default value: `'anacron'`
+
+##### <a name="-rdbduprunner--anacron_frequency"></a>`anacron_frequency`
 
 Data type: `Enum['monthly','weekly','daily','hourly','yearly']`
 
 if using anacron as above, which directory do we put the run script in
 
-##### <a name="cron_resource_name"></a>`cron_resource_name`
+Default value: `'daily'`
+
+##### <a name="-rdbduprunner--cron_resource_name"></a>`cron_resource_name`
 
 Data type: `String`
 
 what do we call the file in anacron or cron.d, the special name in cron, etc.
 
-##### <a name="systemd_service_name"></a>`systemd_service_name`
+Default value: `'rdbduprunner'`
+
+##### <a name="-rdbduprunner--systemd_service_name"></a>`systemd_service_name`
 
 Data type: `String`
 
 what to name the systemd service (not implemented)
 
-##### <a name="hour"></a>`hour`
+Default value: `'rdbduprunner'`
+
+##### <a name="-rdbduprunner--hour"></a>`hour`
 
 Data type: `Any`
 
@@ -307,7 +276,7 @@ used in the cron.d and traditional cron entries
 
 Default value: `fqdn_rand(4)`
 
-##### <a name="minute"></a>`minute`
+##### <a name="-rdbduprunner--minute"></a>`minute`
 
 Data type: `Any`
 
@@ -315,60 +284,47 @@ used in the cron.d and traditional cron entries
 
 Default value: `fqdn_rand(60)`
 
-##### <a name="monthday"></a>`monthday`
+##### <a name="-rdbduprunner--monthday"></a>`monthday`
 
 Data type: `Any`
 
 used in the cron.d and traditional cron entries
 
-Default value: ``undef``
+Default value: `undef`
 
-##### <a name="month"></a>`month`
-
-Data type: `Any`
-
-used in the cron.d and traditional cron entries
-
-Default value: ``undef``
-
-##### <a name="weekday"></a>`weekday`
+##### <a name="-rdbduprunner--month"></a>`month`
 
 Data type: `Any`
 
 used in the cron.d and traditional cron entries
 
-Default value: ``undef``
+Default value: `undef`
 
-##### <a name="log_level"></a>`log_level`
+##### <a name="-rdbduprunner--weekday"></a>`weekday`
 
-Data type: `Enum['debug','info','notice','warning','error','critical','alert','emergency']`
+Data type: `Any`
 
-Enum['debug','info','notice','warning','error','critical','alert','emergency']
-passed to rdbduprunner as is to determine verbosity of log output
+used in the cron.d and traditional cron entries
 
-##### <a name="cmd"></a>`cmd`
+Default value: `undef`
+
+##### <a name="-rdbduprunner--cmd"></a>`cmd`
 
 Data type: `String`
 
 how to invoke rdbduprunner, passed through inline_template to substitute the path to rdbduprunner, etc.
 
-##### <a name="executable"></a>`executable`
+Default value: `'test -x /usr/bin/keychain && eval $( /usr/bin/keychain --eval --quiet ) ; <%= @executable %> --notest >/dev/null 2>&1'`
+
+##### <a name="-rdbduprunner--executable"></a>`executable`
 
 Data type: `String`
 
-where to put rdbduprunner, typically /usr/bin/rdbduprunner
+where to find rdbduprunner
 
 Default value: `'/usr/bin/rdbduprunner'`
 
-##### <a name="executable_source"></a>`executable_source`
-
-Data type: `Optional[Stdlib::Filesource]`
-
-where to get the simple rdbduprunner script
-
-Default value: `'https://raw.githubusercontent.com/aranc23/rdbduprunner/master/rdbduprunner'`
-
-##### <a name="rsync_tag_excludes"></a>`rsync_tag_excludes`
+##### <a name="-rdbduprunner--rsync_tag_excludes"></a>`rsync_tag_excludes`
 
 Data type: `Hash[String,Array[String]]`
 
@@ -378,7 +334,7 @@ replaces static files in /etc/rdbduprunner/excludes, keyed by "tag" and then a l
 
 Default value: `{}`
 
-##### <a name="rdbdup_tag_excludes"></a>`rdbdup_tag_excludes`
+##### <a name="-rdbduprunner--rdbdup_tag_excludes"></a>`rdbdup_tag_excludes`
 
 Data type: `Hash[String,Array[String]]`
 
@@ -388,70 +344,460 @@ replaces static files in /etc/rdbduprunner/rdb-excludes, keyed by "tag" and then
 
 Default value: `{}`
 
-##### <a name="backupsets"></a>`backupsets`
-
-Data type: `Hash[String,Struct[{
-    config_file              => Optional[String],
-    host                     => Optional[String],
-    paths                    => Optional[Array[String]],
-    skips                    => Optional[Array[String]],
-    skipres                  => Optional[Array[String]],
-    excludes                 => Optional[Array[String]],
-    allowfs                  => Optional[Array[String]],
-    backupdestination        => Optional[String],
-    inventory                => Optional[Boolean],
-    inplace                  => Optional[Boolean],
-    prerun                   => Optional[String],
-    postrun                  => Optional[String],
-    rtag                     => Optional[String],
-    disabled                 => Optional[Boolean],
-    maxinc                   => Optional[Integer],
-    export                   => Optional[Boolean],
-    tag                      => Optional[String],
-  }]]`
-
-creates backupset definitions, refer to rdbduprunner documentation for specifics
-
-##### <a name="backupdestinations"></a>`backupdestinations`
-
-Data type: `Hash[String,Struct[{
-    zfscreate                => Optional[Boolean],
-    zfssnapshot              => Optional[Boolean],
-    inplace                  => Optional[Boolean],
-    backup_type              => Optional[Enum['rsync','duplicity','rdiff-backup']],
-    path                     => String,
-    percentused              => Optional[Integer],
-    minfree                  => Optional[Integer],
-    maxinc                   => Optional[Integer],
-  }]]`
-
-creates backupdestination definitions, refer to rdbduprunner documentation for specifics
-
-##### <a name="rsync_tag_excludes"></a>`rsync_tag_excludes`
-
-creates files in the "excludes" directory, named after the tag referenced, see examples
-
-Default value: `{}`
-
-##### <a name="rdbdup_tag_excludes"></a>`rdbdup_tag_excludes`
-
-creates files in the "rdb-excludes" directory, named after the tag referenced, see examples
-
-Default value: `{}`
-
-##### <a name="logrotate"></a>`logrotate`
+##### <a name="-rdbduprunner--logrotate"></a>`logrotate`
 
 Data type: `Enum['present','absent']`
 
 add a logrotate script for rdbduprunner logs
 
-##### <a name="purge_excludes"></a>`purge_excludes`
+Default value: `'present'`
+
+##### <a name="-rdbduprunner--purge_excludes"></a>`purge_excludes`
 
 Data type: `Boolean`
 
 purge non-managed files from the exclude directories (rdb-excludes and excludes)
 
-### <a name="rdbduprunnerbackup"></a>`rdbduprunner::backup`
+Default value: `false`
+
+##### <a name="-rdbduprunner--allowfs"></a>`allowfs`
+
+Data type: `Optional[Variant[String,Array[String]]]`
+
+sets parameter of the same name in global
+see rdbduprunner docs for details
+
+Default value: `undef`
+
+##### <a name="-rdbduprunner--awsaccesskeyid"></a>`awsaccesskeyid`
+
+Data type: `Optional[String]`
+
+sets parameter of the same name in global
+see rdbduprunner docs for details
+
+Default value: `undef`
+
+##### <a name="-rdbduprunner--awssecretaccesskey"></a>`awssecretaccesskey`
+
+Data type: `Optional[String]`
+
+sets parameter of the same name in global
+see rdbduprunner docs for details
+
+Default value: `undef`
+
+##### <a name="-rdbduprunner--backupdestinations"></a>`backupdestinations`
+
+Data type:
+
+```puppet
+Hash[String,Struct[{
+    allowfs => Optional[Variant[String,Array[String]]],
+    awsaccesskeyid => Optional[String],
+    awssecretaccesskey => Optional[String],
+    busted => Optional[Boolean],
+    checksum => Optional[Boolean],
+    duplicitybinary => Optional[Stdlib::UnixPath],
+    encryptkey => Optional[String],
+    gpgpassphrase => Optional[String],
+    inplace => Optional[Boolean],
+    maxage => Optional[String],
+    maxinc => Optional[Integer],
+    minfree => Optional[Integer],
+    path => String,
+    percentused => Optional[Integer],
+    postrun => Optional[String],
+    prerun => Optional[String],
+    rdiffbackupbinary => Optional[Stdlib::UnixPath],
+    rsyncbinary => Optional[Stdlib::UnixPath],
+    signkey => Optional[String],
+    skip => Optional[Variant[String,Array[String]]],
+    skipfstype => Optional[Variant[String,Array[String]]],
+    skipre => Optional[Variant[String,Array[String]]],
+    sparse => Optional[Boolean],
+    sshcompress => Optional[Boolean],
+    stats => Optional[Boolean],
+    trickle => Optional[Integer],
+    tricklebinary => Optional[Stdlib::UnixPath],
+    'type' => Optional[Enum['rsync','duplicity','rdiff-backup']],
+    useagent => Optional[Boolean],
+    verbosity => Optional[Integer],
+    volsize => Optional[Integer],
+    wholefile => Optional[Boolean],
+    zfsbinary => Optional[Stdlib::UnixPath],
+    zfscreate => Optional[Boolean],
+    zfssnapshot => Optional[Boolean],
+  }]]
+```
+
+creates backupdestination definitions, refer to rdbduprunner documentation for specifics
+
+Default value: `{}`
+
+##### <a name="-rdbduprunner--backupsets"></a>`backupsets`
+
+Data type:
+
+```puppet
+Hash[String,Struct[{
+    allowfs => Optional[Variant[String,Array[String]]],
+    backupdestination => Optional[String],
+    checksum => Optional[Boolean],
+    disabled => Optional[Boolean],
+    duplicitybinary => Optional[Stdlib::UnixPath],
+    exclude => Optional[Variant[String,Array[String]]],
+    excludes => Optional[Variant[String,Array[String]]],
+    host => Optional[Stdlib::Host],
+    inplace => Optional[Boolean],
+    inventory => Optional[Boolean],
+    maxage => Optional[String],
+    maxinc => Optional[Integer],
+    path => Optional[Variant[String,Array[String]]],
+    paths => Optional[Variant[String,Array[String]]],
+    postrun => Optional[String],
+    prerun => Optional[String],
+    rdiffbackupbinary => Optional[Stdlib::UnixPath],
+    rsyncbinary => Optional[Stdlib::UnixPath],
+    skip => Optional[Variant[String,Array[String]]],
+    skips => Optional[Variant[String,Array[String]]],
+    skipfstype => Optional[Variant[String,Array[String]]],
+    skipre => Optional[Variant[String,Array[String]]],
+    skipres => Optional[Variant[String,Array[String]]],
+    sparse => Optional[Boolean],
+    sshcompress => Optional[Boolean],
+    stats => Optional[Boolean],
+    'tag' => Optional[String],
+    trickle => Optional[Integer],
+    tricklebinary => Optional[Stdlib::UnixPath],
+    useagent => Optional[Boolean],
+    verbosity => Optional[Integer],
+    volsize => Optional[Integer],
+    wholefile => Optional[Boolean],
+    zfsbinary => Optional[Stdlib::UnixPath],
+  }]]
+```
+
+creates backupset definitions, refer to rdbduprunner documentation for specifics
+
+Default value: `{}`
+
+##### <a name="-rdbduprunner--checksum"></a>`checksum`
+
+Data type: `Optional[Boolean]`
+
+sets parameter of the same name in global
+see rdbduprunner docs for details
+
+Default value: `undef`
+
+##### <a name="-rdbduprunner--defaultbackupdestination"></a>`defaultbackupdestination`
+
+Data type: `Optional[String]`
+
+sets parameter of the same name in global
+see rdbduprunner docs for details
+
+Default value: `undef`
+
+##### <a name="-rdbduprunner--duplicitybinary"></a>`duplicitybinary`
+
+Data type: `Optional[Stdlib::UnixPath]`
+
+sets parameter of the same name in global
+see rdbduprunner docs for details
+
+Default value: `undef`
+
+##### <a name="-rdbduprunner--encryptkey"></a>`encryptkey`
+
+Data type: `Optional[String]`
+
+sets parameter of the same name in global
+see rdbduprunner docs for details
+
+Default value: `undef`
+
+##### <a name="-rdbduprunner--excludepath"></a>`excludepath`
+
+Data type: `Optional[String]`
+
+sets parameter of the same name in global
+see rdbduprunner docs for details
+
+Default value: `undef`
+
+##### <a name="-rdbduprunner--facility"></a>`facility`
+
+Data type: `Optional[String]`
+
+sets parameter of the same name in global
+see rdbduprunner docs for details
+
+Default value: `undef`
+
+##### <a name="-rdbduprunner--gpgpassphrase"></a>`gpgpassphrase`
+
+Data type: `Optional[String]`
+
+sets parameter of the same name in global
+see rdbduprunner docs for details
+
+Default value: `undef`
+
+##### <a name="-rdbduprunner--inplace"></a>`inplace`
+
+Data type: `Optional[Boolean]`
+
+sets parameter of the same name in global
+see rdbduprunner docs for details
+
+Default value: `undef`
+
+##### <a name="-rdbduprunner--level"></a>`level`
+
+Data type: `Optional[String]`
+
+sets parameter of the same name in global
+see rdbduprunner docs for details
+
+Default value: `undef`
+
+##### <a name="-rdbduprunner--localhost"></a>`localhost`
+
+Data type: `Optional[String]`
+
+sets parameter of the same name in global
+see rdbduprunner docs for details
+
+Default value: `undef`
+
+##### <a name="-rdbduprunner--maxage"></a>`maxage`
+
+Data type: `Optional[String]`
+
+sets parameter of the same name in global
+see rdbduprunner docs for details
+
+Default value: `undef`
+
+##### <a name="-rdbduprunner--maxinc"></a>`maxinc`
+
+Data type: `Optional[Integer]`
+
+sets parameter of the same name in global
+see rdbduprunner docs for details
+
+Default value: `undef`
+
+##### <a name="-rdbduprunner--maxprocs"></a>`maxprocs`
+
+Data type: `Optional[Integer]`
+
+sets parameter of the same name in global
+see rdbduprunner docs for details
+
+Default value: `undef`
+
+##### <a name="-rdbduprunner--maxwait"></a>`maxwait`
+
+Data type: `Optional[Integer]`
+
+sets parameter of the same name in global
+see rdbduprunner docs for details
+
+Default value: `undef`
+
+##### <a name="-rdbduprunner--postrun"></a>`postrun`
+
+Data type: `Optional[String]`
+
+sets parameter of the same name in global
+see rdbduprunner docs for details
+
+Default value: `undef`
+
+##### <a name="-rdbduprunner--prerun"></a>`prerun`
+
+Data type: `Optional[String]`
+
+sets parameter of the same name in global
+see rdbduprunner docs for details
+
+Default value: `undef`
+
+##### <a name="-rdbduprunner--rdiffbackupbinary"></a>`rdiffbackupbinary`
+
+Data type: `Optional[Stdlib::UnixPath]`
+
+sets parameter of the same name in global
+see rdbduprunner docs for details
+
+Default value: `undef`
+
+##### <a name="-rdbduprunner--rsyncbinary"></a>`rsyncbinary`
+
+Data type: `Optional[Stdlib::UnixPath]`
+
+sets parameter of the same name in global
+see rdbduprunner docs for details
+
+Default value: `undef`
+
+##### <a name="-rdbduprunner--signkey"></a>`signkey`
+
+Data type: `Optional[String]`
+
+sets parameter of the same name in global
+see rdbduprunner docs for details
+
+Default value: `undef`
+
+##### <a name="-rdbduprunner--skip"></a>`skip`
+
+Data type: `Optional[Variant[String,Array[String]]]`
+
+sets parameter of the same name in global
+see rdbduprunner docs for details
+
+Default value: `undef`
+
+##### <a name="-rdbduprunner--skipfstype"></a>`skipfstype`
+
+Data type: `Optional[Variant[String,Array[String]]]`
+
+sets parameter of the same name in global
+see rdbduprunner docs for details
+
+Default value: `undef`
+
+##### <a name="-rdbduprunner--skipre"></a>`skipre`
+
+Data type: `Optional[Variant[String,Array[String]]]`
+
+sets parameter of the same name in global
+see rdbduprunner docs for details
+
+Default value: `undef`
+
+##### <a name="-rdbduprunner--sparse"></a>`sparse`
+
+Data type: `Optional[Boolean]`
+
+sets parameter of the same name in global
+see rdbduprunner docs for details
+
+Default value: `undef`
+
+##### <a name="-rdbduprunner--sshcompress"></a>`sshcompress`
+
+Data type: `Optional[Boolean]`
+
+sets parameter of the same name in global
+see rdbduprunner docs for details
+
+Default value: `undef`
+
+##### <a name="-rdbduprunner--stats"></a>`stats`
+
+Data type: `Optional[Boolean]`
+
+sets parameter of the same name in global
+see rdbduprunner docs for details
+
+Default value: `undef`
+
+##### <a name="-rdbduprunner--tempdir"></a>`tempdir`
+
+Data type: `Optional[String]`
+
+sets parameter of the same name in global
+see rdbduprunner docs for details
+
+Default value: `undef`
+
+##### <a name="-rdbduprunner--trickle"></a>`trickle`
+
+Data type: `Optional[Integer]`
+
+sets parameter of the same name in global
+see rdbduprunner docs for details
+
+Default value: `undef`
+
+##### <a name="-rdbduprunner--tricklebinary"></a>`tricklebinary`
+
+Data type: `Optional[Stdlib::UnixPath]`
+
+sets parameter of the same name in global
+see rdbduprunner docs for details
+
+Default value: `undef`
+
+##### <a name="-rdbduprunner--useagent"></a>`useagent`
+
+Data type: `Optional[Boolean]`
+
+sets parameter of the same name in global
+see rdbduprunner docs for details
+
+Default value: `undef`
+
+##### <a name="-rdbduprunner--verbosity"></a>`verbosity`
+
+Data type: `Optional[Integer]`
+
+sets parameter of the same name in global
+see rdbduprunner docs for details
+
+Default value: `undef`
+
+##### <a name="-rdbduprunner--volsize"></a>`volsize`
+
+Data type: `Optional[Integer]`
+
+sets parameter of the same name in global
+see rdbduprunner docs for details
+
+Default value: `undef`
+
+##### <a name="-rdbduprunner--wholefile"></a>`wholefile`
+
+Data type: `Optional[Boolean]`
+
+sets parameter of the same name in global
+see rdbduprunner docs for details
+
+Default value: `undef`
+
+##### <a name="-rdbduprunner--zfsbinary"></a>`zfsbinary`
+
+Data type: `Optional[Stdlib::UnixPath]`
+
+sets parameter of the same name in global
+see rdbduprunner docs for details
+
+Default value: `undef`
+
+##### <a name="-rdbduprunner--zfscreate"></a>`zfscreate`
+
+Data type: `Optional[Boolean]`
+
+sets parameter of the same name in global
+see rdbduprunner docs for details
+
+Default value: `undef`
+
+##### <a name="-rdbduprunner--zfssnapshot"></a>`zfssnapshot`
+
+Data type: `Optional[Boolean]`
+
+sets parameter of the same name in global
+see rdbduprunner docs for details
+
+Default value: `undef`
+
+### <a name="rdbduprunner--backup"></a>`rdbduprunner::backup`
 
 create a backupdestination and multiple backupsets, one per paths
 
@@ -487,17 +833,17 @@ creates:
 
 The following parameters are available in the `rdbduprunner::backup` class:
 
-* [`ensure`](#ensure)
-* [`directory`](#directory)
-* [`host`](#host)
-* [`destination`](#destination)
-* [`disabled`](#disabled)
-* [`prerun`](#prerun)
-* [`postrun`](#postrun)
-* [`priority`](#priority)
-* [`paths`](#paths)
+* [`ensure`](#-rdbduprunner--backup--ensure)
+* [`directory`](#-rdbduprunner--backup--directory)
+* [`host`](#-rdbduprunner--backup--host)
+* [`destination`](#-rdbduprunner--backup--destination)
+* [`disabled`](#-rdbduprunner--backup--disabled)
+* [`prerun`](#-rdbduprunner--backup--prerun)
+* [`postrun`](#-rdbduprunner--backup--postrun)
+* [`priority`](#-rdbduprunner--backup--priority)
+* [`paths`](#-rdbduprunner--backup--paths)
 
-##### <a name="ensure"></a>`ensure`
+##### <a name="-rdbduprunner--backup--ensure"></a>`ensure`
 
 Data type: `Enum['present','absent']`
 
@@ -505,7 +851,7 @@ Present or absent or maybe something else
 
 Default value: `'present'`
 
-##### <a name="directory"></a>`directory`
+##### <a name="-rdbduprunner--backup--directory"></a>`directory`
 
 Data type: `Optional[String]`
 
@@ -513,7 +859,7 @@ path to conf.d directory
 
 Default value: `'/etc/rdbduprunner/conf.d'`
 
-##### <a name="host"></a>`host`
+##### <a name="-rdbduprunner--backup--host"></a>`host`
 
 Data type: `Optional[String]`
 
@@ -521,65 +867,65 @@ defaults to local hostname
 
 Default value: `$::hostname`
 
-##### <a name="destination"></a>`destination`
+##### <a name="-rdbduprunner--backup--destination"></a>`destination`
 
 Data type: `Optional[String]`
 
 where to write the backups
 
-##### <a name="disabled"></a>`disabled`
+##### <a name="-rdbduprunner--backup--disabled"></a>`disabled`
 
 Data type: `Optional[Boolean]`
 
 enable/disable this backup
 
-Default value: ``false``
+Default value: `false`
 
-##### <a name="prerun"></a>`prerun`
+##### <a name="-rdbduprunner--backup--prerun"></a>`prerun`
 
 Data type: `Optional[String]`
 
 run this before the backup
 
-Default value: ``undef``
+Default value: `undef`
 
-##### <a name="postrun"></a>`postrun`
+##### <a name="-rdbduprunner--backup--postrun"></a>`postrun`
 
 Data type: `Optional[String]`
 
 run this after the backup
 
-Default value: ``undef``
+Default value: `undef`
 
-##### <a name="priority"></a>`priority`
+##### <a name="-rdbduprunner--backup--priority"></a>`priority`
 
 Data type: `Optional[Integer]`
 
 changes ordering of backups (probably does not work)
 
-Default value: ``undef``
+Default value: `undef`
 
-##### <a name="paths"></a>`paths`
+##### <a name="-rdbduprunner--backup--paths"></a>`paths`
 
 Data type: `Hash[String,Array[String]]`
 
 hash of paths with arrays to exclude per filesystem
 
-### <a name="rdbduprunnerconfigure"></a>`rdbduprunner::configure`
+### <a name="rdbduprunner--configure"></a>`rdbduprunner::configure`
 
 used by rdbduprunner to configure the software
 
-### <a name="rdbduprunnerinstall"></a>`rdbduprunner::install`
+### <a name="rdbduprunner--install"></a>`rdbduprunner::install`
 
 used by rdbduprunner to install the software
 
-### <a name="rdbduprunnerservice"></a>`rdbduprunner::service`
+### <a name="rdbduprunner--service"></a>`rdbduprunner::service`
 
 used by rdbduprunner to configure the service
 
 ## Defined types
 
-### <a name="rdbduprunnerautobackup"></a>`rdbduprunner::autobackup`
+### <a name="rdbduprunner--autobackup"></a>`rdbduprunner::autobackup`
 
 creates one backupset and one backupdestination in conf.d
 
@@ -600,120 +946,95 @@ rdbduprunner::autobackup { 'lss':
 
 The following parameters are available in the `rdbduprunner::autobackup` defined type:
 
-* [`destination`](#destination)
-* [`ensure`](#ensure)
-* [`owner`](#owner)
-* [`group`](#group)
-* [`mode`](#mode)
-* [`host`](#host)
-* [`rtag`](#rtag)
-* [`disabled`](#disabled)
-* [`inventory`](#inventory)
-* [`inplace`](#inplace)
-* [`prerun`](#prerun)
-* [`postrun`](#postrun)
-* [`paths`](#paths)
-* [`excludes`](#excludes)
-* [`skips`](#skips)
-* [`skipres`](#skipres)
-* [`directory`](#directory)
-* [`backupdestination`](#backupdestination)
+* [`destination`](#-rdbduprunner--autobackup--destination)
+* [`host`](#-rdbduprunner--autobackup--host)
+* [`rtag`](#-rdbduprunner--autobackup--rtag)
+* [`disabled`](#-rdbduprunner--autobackup--disabled)
+* [`inventory`](#-rdbduprunner--autobackup--inventory)
+* [`inplace`](#-rdbduprunner--autobackup--inplace)
+* [`sparse`](#-rdbduprunner--autobackup--sparse)
+* [`prerun`](#-rdbduprunner--autobackup--prerun)
+* [`postrun`](#-rdbduprunner--autobackup--postrun)
+* [`paths`](#-rdbduprunner--autobackup--paths)
+* [`excludes`](#-rdbduprunner--autobackup--excludes)
+* [`skips`](#-rdbduprunner--autobackup--skips)
+* [`skipres`](#-rdbduprunner--autobackup--skipres)
+* [`backup_type`](#-rdbduprunner--autobackup--backup_type)
+* [`directory`](#-rdbduprunner--autobackup--directory)
+* [`backupdestination`](#-rdbduprunner--autobackup--backupdestination)
+* [`wholefile`](#-rdbduprunner--autobackup--wholefile)
 
-##### <a name="destination"></a>`destination`
+##### <a name="-rdbduprunner--autobackup--destination"></a>`destination`
 
 Data type: `String`
 
 where to write the backups, used in the backupset
 
-##### <a name="ensure"></a>`ensure`
+##### <a name="-rdbduprunner--autobackup--host"></a>`host`
 
-Data type: `Enum['absent','present']`
-
-the usual present/absent magic
-
-Default value: `'present'`
-
-##### <a name="owner"></a>`owner`
-
-Data type: `Variant[String,Integer]`
-
-user uid to create configuration file as
-
-Default value: `'root'`
-
-##### <a name="group"></a>`group`
-
-Data type: `Variant[String,Integer]`
-
-group or gid for the configuration file
-
-Default value: `0`
-
-##### <a name="mode"></a>`mode`
-
-Data type: `String`
-
-octal mode string for config file
-
-Default value: `'0440'`
-
-##### <a name="host"></a>`host`
-
-Data type: `String`
+Data type: `Optional[String]`
 
 which host to back up, leave blank for localhost
 
-Default value: `$::hostname`
+Default value: `undef`
 
-##### <a name="rtag"></a>`rtag`
+##### <a name="-rdbduprunner--autobackup--rtag"></a>`rtag`
 
 Data type: `Variant[String,Undef]`
 
 override the tag in the backupset configuration, called rtag because tag is reserved
 
-Default value: ``undef``
+Default value: `undef`
 
-##### <a name="disabled"></a>`disabled`
+##### <a name="-rdbduprunner--autobackup--disabled"></a>`disabled`
 
 Data type: `Optional[Boolean]`
 
 sets parameter of the same name in the backupset
 
-Default value: ``undef``
+Default value: `undef`
 
-##### <a name="inventory"></a>`inventory`
-
-Data type: `Variant[Boolean,Undef]`
-
-sets parameter of the same name in the backupset
-
-Default value: ``true``
-
-##### <a name="inplace"></a>`inplace`
+##### <a name="-rdbduprunner--autobackup--inventory"></a>`inventory`
 
 Data type: `Variant[Boolean,Undef]`
 
 sets parameter of the same name in the backupset
 
-Default value: ``undef``
+Default value: `true`
 
-##### <a name="prerun"></a>`prerun`
+##### <a name="-rdbduprunner--autobackup--inplace"></a>`inplace`
+
+Data type: `Optional[Boolean]`
+
+sets parameter of the same name in the backupset
+
+Default value: `undef`
+
+##### <a name="-rdbduprunner--autobackup--sparse"></a>`sparse`
+
+Data type: `Optional[Boolean]`
+
+sets parameter of the same name in the backupset
+
+Default value: `undef`
+
+##### <a name="-rdbduprunner--autobackup--prerun"></a>`prerun`
 
 Data type: `Variant[String,Undef]`
 
 sets parameter of the same name in the backupset
 
-Default value: ``undef``
+Default value: `undef`
 
-##### <a name="postrun"></a>`postrun`
+##### <a name="-rdbduprunner--autobackup--postrun"></a>`postrun`
 
 Data type: `Variant[String,Undef]`
 
 sets parameter of the same name in the backupset
 
-Default value: ``undef``
+Default value: `undef`
 
-##### <a name="paths"></a>`paths`
+##### <a name="-rdbduprunner--autobackup--paths"></a>`paths`
 
 Data type: `Array[String]`
 
@@ -721,7 +1042,7 @@ for each entry in this array, create a Path X statement in backupset
 
 Default value: `[]`
 
-##### <a name="excludes"></a>`excludes`
+##### <a name="-rdbduprunner--autobackup--excludes"></a>`excludes`
 
 Data type: `Array[String]`
 
@@ -729,7 +1050,7 @@ for each entry in this array, create a Exclude X statement in backupset
 
 Default value: `[]`
 
-##### <a name="skips"></a>`skips`
+##### <a name="-rdbduprunner--autobackup--skips"></a>`skips`
 
 Data type: `Array[String]`
 
@@ -737,7 +1058,7 @@ for each entry in this array, create a Skip X statement in backupset
 
 Default value: `[ '/var/lib/mysql', '/var/lib/pgsql' ]`
 
-##### <a name="skipres"></a>`skipres`
+##### <a name="-rdbduprunner--autobackup--skipres"></a>`skipres`
 
 Data type: `Array[String]`
 
@@ -745,15 +1066,23 @@ for each entry in this array, create a SkipRE X statement in backupset
 
 Default value: `[ '^\/run\/media', '^\/var\/lib\/docker\/devicemapper' ]`
 
-##### <a name="directory"></a>`directory`
+##### <a name="-rdbduprunner--autobackup--backup_type"></a>`backup_type`
+
+Data type: `Enum['rsync','duplicity','rdiff-backup']`
+
+set the backup "type" of the destination
+
+Default value: `'rsync'`
+
+##### <a name="-rdbduprunner--autobackup--directory"></a>`directory`
 
 Data type: `String`
 
 
 
-Default value: `'/etc/rdbduprunner/conf.d'`
+Default value: `"${rdbduprunner::config_dir}/conf.d"`
 
-##### <a name="backupdestination"></a>`backupdestination`
+##### <a name="-rdbduprunner--autobackup--backupdestination"></a>`backupdestination`
 
 Data type: `Variant[String,Undef]`
 
@@ -761,7 +1090,15 @@ Data type: `Variant[String,Undef]`
 
 Default value: `$title`
 
-### <a name="rdbduprunnerbackupdestination"></a>`rdbduprunner::backupdestination`
+##### <a name="-rdbduprunner--autobackup--wholefile"></a>`wholefile`
+
+Data type: `Optional[Boolean]`
+
+
+
+Default value: `false`
+
+### <a name="rdbduprunner--backupdestination"></a>`rdbduprunner::backupdestination`
 
 create a backupdestination in specified file
 
@@ -779,134 +1116,394 @@ rdbduprunner::backupdestination { 'mylss':
 
 The following parameters are available in the `rdbduprunner::backupdestination` defined type:
 
-* [`path`](#path)
-* [`inplace`](#inplace)
-* [`zfscreate`](#zfscreate)
-* [`zfssnapshot`](#zfssnapshot)
-* [`backup_type`](#backup_type)
-* [`percentused`](#percentused)
-* [`minfree`](#minfree)
-* [`maxinc`](#maxinc)
-* [`owner`](#owner)
-* [`group`](#group)
-* [`mode`](#mode)
-* [`config_file`](#config_file)
-* [`concat`](#concat)
-* [`ensure`](#ensure)
+* [`allowfs`](#-rdbduprunner--backupdestination--allowfs)
+* [`awsaccesskeyid`](#-rdbduprunner--backupdestination--awsaccesskeyid)
+* [`awssecretaccesskey`](#-rdbduprunner--backupdestination--awssecretaccesskey)
+* [`busted`](#-rdbduprunner--backupdestination--busted)
+* [`checksum`](#-rdbduprunner--backupdestination--checksum)
+* [`duplicitybinary`](#-rdbduprunner--backupdestination--duplicitybinary)
+* [`encryptkey`](#-rdbduprunner--backupdestination--encryptkey)
+* [`gpgpassphrase`](#-rdbduprunner--backupdestination--gpgpassphrase)
+* [`inplace`](#-rdbduprunner--backupdestination--inplace)
+* [`maxage`](#-rdbduprunner--backupdestination--maxage)
+* [`maxinc`](#-rdbduprunner--backupdestination--maxinc)
+* [`minfree`](#-rdbduprunner--backupdestination--minfree)
+* [`path`](#-rdbduprunner--backupdestination--path)
+* [`percentused`](#-rdbduprunner--backupdestination--percentused)
+* [`postrun`](#-rdbduprunner--backupdestination--postrun)
+* [`prerun`](#-rdbduprunner--backupdestination--prerun)
+* [`rdiffbackupbinary`](#-rdbduprunner--backupdestination--rdiffbackupbinary)
+* [`rsyncbinary`](#-rdbduprunner--backupdestination--rsyncbinary)
+* [`signkey`](#-rdbduprunner--backupdestination--signkey)
+* [`skip`](#-rdbduprunner--backupdestination--skip)
+* [`skipfstype`](#-rdbduprunner--backupdestination--skipfstype)
+* [`skipre`](#-rdbduprunner--backupdestination--skipre)
+* [`sshcompress`](#-rdbduprunner--backupdestination--sshcompress)
+* [`stats`](#-rdbduprunner--backupdestination--stats)
+* [`trickle`](#-rdbduprunner--backupdestination--trickle)
+* [`tricklebinary`](#-rdbduprunner--backupdestination--tricklebinary)
+* [`backup_type`](#-rdbduprunner--backupdestination--backup_type)
+* [`useagent`](#-rdbduprunner--backupdestination--useagent)
+* [`verbosity`](#-rdbduprunner--backupdestination--verbosity)
+* [`volsize`](#-rdbduprunner--backupdestination--volsize)
+* [`wholefile`](#-rdbduprunner--backupdestination--wholefile)
+* [`zfsbinary`](#-rdbduprunner--backupdestination--zfsbinary)
+* [`zfscreate`](#-rdbduprunner--backupdestination--zfscreate)
+* [`zfssnapshot`](#-rdbduprunner--backupdestination--zfssnapshot)
+* [`owner`](#-rdbduprunner--backupdestination--owner)
+* [`group`](#-rdbduprunner--backupdestination--group)
+* [`mode`](#-rdbduprunner--backupdestination--mode)
+* [`config_file`](#-rdbduprunner--backupdestination--config_file)
+* [`sparse`](#-rdbduprunner--backupdestination--sparse)
 
-##### <a name="path"></a>`path`
+##### <a name="-rdbduprunner--backupdestination--allowfs"></a>`allowfs`
 
-Data type: `String`
+Data type: `Optional[Variant[String,Array[String]]]`
 
-sets parameter of the same name in the backupdestination
+sets parameter of the same name in backupdestination
+see rdbduprunner docs for details
 
-##### <a name="inplace"></a>`inplace`
+Default value: `undef`
+
+##### <a name="-rdbduprunner--backupdestination--awsaccesskeyid"></a>`awsaccesskeyid`
+
+Data type: `Optional[String]`
+
+sets parameter of the same name in backupdestination
+see rdbduprunner docs for details
+
+Default value: `undef`
+
+##### <a name="-rdbduprunner--backupdestination--awssecretaccesskey"></a>`awssecretaccesskey`
+
+Data type: `Optional[String]`
+
+sets parameter of the same name in backupdestination
+see rdbduprunner docs for details
+
+Default value: `undef`
+
+##### <a name="-rdbduprunner--backupdestination--busted"></a>`busted`
 
 Data type: `Optional[Boolean]`
 
-sets parameter of the same name in the backupdestination
+sets parameter of the same name in backupdestination
+see rdbduprunner docs for details
 
-Default value: ``undef``
+Default value: `undef`
 
-##### <a name="zfscreate"></a>`zfscreate`
-
-Data type: `Optional[Boolean]`
-
-sets parameter of the same name in the backupdestination
-
-Default value: ``undef``
-
-##### <a name="zfssnapshot"></a>`zfssnapshot`
+##### <a name="-rdbduprunner--backupdestination--checksum"></a>`checksum`
 
 Data type: `Optional[Boolean]`
 
-sets parameter of the same name in the backupdestination
+sets parameter of the same name in backupdestination
+see rdbduprunner docs for details
 
-Default value: ``undef``
+Default value: `undef`
 
-##### <a name="backup_type"></a>`backup_type`
+##### <a name="-rdbduprunner--backupdestination--duplicitybinary"></a>`duplicitybinary`
+
+Data type: `Optional[Stdlib::UnixPath]`
+
+sets parameter of the same name in backupdestination
+see rdbduprunner docs for details
+
+Default value: `undef`
+
+##### <a name="-rdbduprunner--backupdestination--encryptkey"></a>`encryptkey`
+
+Data type: `Optional[String]`
+
+sets parameter of the same name in backupdestination
+see rdbduprunner docs for details
+
+Default value: `undef`
+
+##### <a name="-rdbduprunner--backupdestination--gpgpassphrase"></a>`gpgpassphrase`
+
+Data type: `Optional[String]`
+
+sets parameter of the same name in backupdestination
+see rdbduprunner docs for details
+
+Default value: `undef`
+
+##### <a name="-rdbduprunner--backupdestination--inplace"></a>`inplace`
+
+Data type: `Optional[Boolean]`
+
+sets parameter of the same name in backupdestination
+see rdbduprunner docs for details
+
+Default value: `undef`
+
+##### <a name="-rdbduprunner--backupdestination--maxage"></a>`maxage`
+
+Data type: `Optional[String]`
+
+sets parameter of the same name in backupdestination
+see rdbduprunner docs for details
+
+Default value: `undef`
+
+##### <a name="-rdbduprunner--backupdestination--maxinc"></a>`maxinc`
+
+Data type: `Optional[Integer]`
+
+sets parameter of the same name in backupdestination
+see rdbduprunner docs for details
+
+Default value: `undef`
+
+##### <a name="-rdbduprunner--backupdestination--minfree"></a>`minfree`
+
+Data type: `Optional[Integer]`
+
+sets parameter of the same name in backupdestination
+see rdbduprunner docs for details
+
+Default value: `undef`
+
+##### <a name="-rdbduprunner--backupdestination--path"></a>`path`
+
+Data type: `Stdlib::UnixPath`
+
+sets parameter of the same name in backupdestination
+see rdbduprunner docs for details
+
+##### <a name="-rdbduprunner--backupdestination--percentused"></a>`percentused`
+
+Data type: `Optional[Integer]`
+
+sets parameter of the same name in backupdestination
+see rdbduprunner docs for details
+
+Default value: `undef`
+
+##### <a name="-rdbduprunner--backupdestination--postrun"></a>`postrun`
+
+Data type: `Optional[String]`
+
+sets parameter of the same name in backupdestination
+see rdbduprunner docs for details
+
+Default value: `undef`
+
+##### <a name="-rdbduprunner--backupdestination--prerun"></a>`prerun`
+
+Data type: `Optional[String]`
+
+sets parameter of the same name in backupdestination
+see rdbduprunner docs for details
+
+Default value: `undef`
+
+##### <a name="-rdbduprunner--backupdestination--rdiffbackupbinary"></a>`rdiffbackupbinary`
+
+Data type: `Optional[Stdlib::UnixPath]`
+
+sets parameter of the same name in backupdestination
+see rdbduprunner docs for details
+
+Default value: `undef`
+
+##### <a name="-rdbduprunner--backupdestination--rsyncbinary"></a>`rsyncbinary`
+
+Data type: `Optional[Stdlib::UnixPath]`
+
+sets parameter of the same name in backupdestination
+see rdbduprunner docs for details
+
+Default value: `undef`
+
+##### <a name="-rdbduprunner--backupdestination--signkey"></a>`signkey`
+
+Data type: `Optional[String]`
+
+sets parameter of the same name in backupdestination
+see rdbduprunner docs for details
+
+Default value: `undef`
+
+##### <a name="-rdbduprunner--backupdestination--skip"></a>`skip`
+
+Data type: `Optional[Variant[String,Array[String]]]`
+
+sets parameter of the same name in backupdestination
+see rdbduprunner docs for details
+
+Default value: `undef`
+
+##### <a name="-rdbduprunner--backupdestination--skipfstype"></a>`skipfstype`
+
+Data type: `Optional[Variant[String,Array[String]]]`
+
+sets parameter of the same name in backupdestination
+see rdbduprunner docs for details
+
+Default value: `undef`
+
+##### <a name="-rdbduprunner--backupdestination--skipre"></a>`skipre`
+
+Data type: `Optional[Variant[String,Array[String]]]`
+
+sets parameter of the same name in backupdestination
+see rdbduprunner docs for details
+
+Default value: `undef`
+
+##### <a name="-rdbduprunner--backupdestination--sshcompress"></a>`sshcompress`
+
+Data type: `Optional[Boolean]`
+
+sets parameter of the same name in backupdestination
+see rdbduprunner docs for details
+
+Default value: `undef`
+
+##### <a name="-rdbduprunner--backupdestination--stats"></a>`stats`
+
+Data type: `Optional[Boolean]`
+
+sets parameter of the same name in backupdestination
+see rdbduprunner docs for details
+
+Default value: `undef`
+
+##### <a name="-rdbduprunner--backupdestination--trickle"></a>`trickle`
+
+Data type: `Optional[Integer]`
+
+sets parameter of the same name in backupdestination
+see rdbduprunner docs for details
+
+Default value: `undef`
+
+##### <a name="-rdbduprunner--backupdestination--tricklebinary"></a>`tricklebinary`
+
+Data type: `Optional[Stdlib::UnixPath]`
+
+sets parameter of the same name in backupdestination
+see rdbduprunner docs for details
+
+Default value: `undef`
+
+##### <a name="-rdbduprunner--backupdestination--backup_type"></a>`backup_type`
 
 Data type: `Enum['rsync','duplicity','rdiff-backup']`
 
-sets the type parameter in the backupdestination
+sets parameter type in backupdestination
+see rdbduprunner docs for details
 
 Default value: `'rsync'`
 
-##### <a name="percentused"></a>`percentused`
+##### <a name="-rdbduprunner--backupdestination--useagent"></a>`useagent`
+
+Data type: `Optional[Boolean]`
+
+sets parameter of the same name in backupdestination
+see rdbduprunner docs for details
+
+Default value: `undef`
+
+##### <a name="-rdbduprunner--backupdestination--verbosity"></a>`verbosity`
 
 Data type: `Optional[Integer]`
 
-sets parameter of the same name in the backupdestination
+sets parameter of the same name in backupdestination
+see rdbduprunner docs for details
 
-Default value: ``undef``
+Default value: `undef`
 
-##### <a name="minfree"></a>`minfree`
-
-Data type: `Optional[Integer]`
-
-sets parameter of the same name in the backupdestination
-
-Default value: ``undef``
-
-##### <a name="maxinc"></a>`maxinc`
+##### <a name="-rdbduprunner--backupdestination--volsize"></a>`volsize`
 
 Data type: `Optional[Integer]`
 
-sets parameter of the same name in the backupdestination
+sets parameter of the same name in backupdestination
+see rdbduprunner docs for details
 
-Default value: ``undef``
+Default value: `undef`
 
-##### <a name="owner"></a>`owner`
+##### <a name="-rdbduprunner--backupdestination--wholefile"></a>`wholefile`
+
+Data type: `Optional[Boolean]`
+
+sets parameter of the same name in backupdestination
+see rdbduprunner docs for details
+
+Default value: `undef`
+
+##### <a name="-rdbduprunner--backupdestination--zfsbinary"></a>`zfsbinary`
+
+Data type: `Optional[Stdlib::UnixPath]`
+
+sets parameter of the same name in backupdestination
+see rdbduprunner docs for details
+
+Default value: `undef`
+
+##### <a name="-rdbduprunner--backupdestination--zfscreate"></a>`zfscreate`
+
+Data type: `Optional[Boolean]`
+
+sets parameter of the same name in backupdestination
+see rdbduprunner docs for details
+
+Default value: `undef`
+
+##### <a name="-rdbduprunner--backupdestination--zfssnapshot"></a>`zfssnapshot`
+
+Data type: `Optional[Boolean]`
+
+sets parameter of the same name in backupdestination
+see rdbduprunner docs for details
+
+Default value: `undef`
+
+##### <a name="-rdbduprunner--backupdestination--owner"></a>`owner`
 
 Data type: `Variant[String,Integer]`
 
 set most/some files to this user or uid
 
-Default value: `'root'`
+Default value: `$rdbduprunner::owner`
 
-##### <a name="group"></a>`group`
+##### <a name="-rdbduprunner--backupdestination--group"></a>`group`
 
 Data type: `Variant[String,Integer]`
 
 set most/some files to this group or gid
 
-Default value: `0`
+Default value: `$rdbduprunner::group`
 
-##### <a name="mode"></a>`mode`
+##### <a name="-rdbduprunner--backupdestination--mode"></a>`mode`
 
-Data type: `String`
+Data type: `Stdlib::Filemode`
 
 set most/some files to this octal mode string
 
-Default value: `'0440'`
+Default value: `$rdbduprunner::mode`
 
-##### <a name="config_file"></a>`config_file`
+##### <a name="-rdbduprunner--backupdestination--config_file"></a>`config_file`
 
-Data type: `String`
+Data type: `Stdlib::UnixPath`
 
-config file in which to create the backupset definition
+config file in which to create the backupdestination definition
+must end in .yaml or .yml
 
-Default value: `"/etc/rdbduprunner/conf.d/backupdestination-${title}.conf"`
+Default value: `"${rdbduprunner::config_dir}/conf.d/backupdestination-${title}.yaml"`
 
-##### <a name="concat"></a>`concat`
+##### <a name="-rdbduprunner--backupdestination--sparse"></a>`sparse`
 
-Data type: `Boolean`
-
-instead of creating a file, use concat to add to file with concat::fragment
-
-Default value: ``false``
-
-##### <a name="ensure"></a>`ensure`
-
-Data type: `Enum['present','absent']`
+Data type: `Optional[Boolean]`
 
 
 
-Default value: `'present'`
+Default value: `undef`
 
-### <a name="rdbduprunnerbackupset"></a>`rdbduprunner::backupset`
+### <a name="rdbduprunner--backupset"></a>`rdbduprunner::backupset`
 
-creates one backupset definition in specified file, used by the main module and ::backup and ::autobackup helpers
+creates one backupset definition in specified file, used by the main module and ::autobackup helpers
 
 #### Examples
 
@@ -916,8 +1513,8 @@ creates one backupset definition in specified file, used by the main module and 
 rdbduprunner::backupset { 'badhost':
   host => 'badhost',
   inventory => false,
-  paths => ['data'],
-  excludes => ['not_backed_up'],
+  path => ['data'],
+  exclude => ['not_backed_up'],
 }
 ```
 
@@ -925,184 +1522,385 @@ rdbduprunner::backupset { 'badhost':
 
 The following parameters are available in the `rdbduprunner::backupset` defined type:
 
-* [`owner`](#owner)
-* [`group`](#group)
-* [`mode`](#mode)
-* [`config_file`](#config_file)
-* [`concat`](#concat)
-* [`host`](#host)
-* [`disabled`](#disabled)
-* [`backupdestination`](#backupdestination)
-* [`inventory`](#inventory)
-* [`inplace`](#inplace)
-* [`prerun`](#prerun)
-* [`postrun`](#postrun)
-* [`maxinc`](#maxinc)
-* [`allowfs`](#allowfs)
-* [`paths`](#paths)
-* [`excludes`](#excludes)
-* [`skips`](#skips)
-* [`skipres`](#skipres)
-* [`ensure`](#ensure)
-* [`rtag`](#rtag)
+* [`owner`](#-rdbduprunner--backupset--owner)
+* [`group`](#-rdbduprunner--backupset--group)
+* [`mode`](#-rdbduprunner--backupset--mode)
+* [`config_file`](#-rdbduprunner--backupset--config_file)
+* [`allowfs`](#-rdbduprunner--backupset--allowfs)
+* [`backupdestination`](#-rdbduprunner--backupset--backupdestination)
+* [`checksum`](#-rdbduprunner--backupset--checksum)
+* [`disabled`](#-rdbduprunner--backupset--disabled)
+* [`duplicitybinary`](#-rdbduprunner--backupset--duplicitybinary)
+* [`exclude`](#-rdbduprunner--backupset--exclude)
+* [`host`](#-rdbduprunner--backupset--host)
+* [`inplace`](#-rdbduprunner--backupset--inplace)
+* [`inventory`](#-rdbduprunner--backupset--inventory)
+* [`maxage`](#-rdbduprunner--backupset--maxage)
+* [`maxinc`](#-rdbduprunner--backupset--maxinc)
+* [`path`](#-rdbduprunner--backupset--path)
+* [`postrun`](#-rdbduprunner--backupset--postrun)
+* [`prerun`](#-rdbduprunner--backupset--prerun)
+* [`rdiffbackupbinary`](#-rdbduprunner--backupset--rdiffbackupbinary)
+* [`rsyncbinary`](#-rdbduprunner--backupset--rsyncbinary)
+* [`skip`](#-rdbduprunner--backupset--skip)
+* [`skipfstype`](#-rdbduprunner--backupset--skipfstype)
+* [`skipre`](#-rdbduprunner--backupset--skipre)
+* [`sshcompress`](#-rdbduprunner--backupset--sshcompress)
+* [`stats`](#-rdbduprunner--backupset--stats)
+* [`rtag`](#-rdbduprunner--backupset--rtag)
+* [`trickle`](#-rdbduprunner--backupset--trickle)
+* [`tricklebinary`](#-rdbduprunner--backupset--tricklebinary)
+* [`useagent`](#-rdbduprunner--backupset--useagent)
+* [`verbosity`](#-rdbduprunner--backupset--verbosity)
+* [`volsize`](#-rdbduprunner--backupset--volsize)
+* [`wholefile`](#-rdbduprunner--backupset--wholefile)
+* [`zfsbinary`](#-rdbduprunner--backupset--zfsbinary)
+* [`file_ensure`](#-rdbduprunner--backupset--file_ensure)
+* [`sparse`](#-rdbduprunner--backupset--sparse)
+* [`excludes`](#-rdbduprunner--backupset--excludes)
+* [`paths`](#-rdbduprunner--backupset--paths)
+* [`skips`](#-rdbduprunner--backupset--skips)
+* [`skipres`](#-rdbduprunner--backupset--skipres)
 
-##### <a name="owner"></a>`owner`
+##### <a name="-rdbduprunner--backupset--owner"></a>`owner`
 
 Data type: `Variant[String,Integer]`
 
 set most/some files to this user or uid
 
-Default value: `'root'`
+Default value: `$rdbduprunner::owner`
 
-##### <a name="group"></a>`group`
+##### <a name="-rdbduprunner--backupset--group"></a>`group`
 
 Data type: `Variant[String,Integer]`
 
 set most/some files to this group or gid
 
-Default value: `0`
+Default value: `$rdbduprunner::group`
 
-##### <a name="mode"></a>`mode`
+##### <a name="-rdbduprunner--backupset--mode"></a>`mode`
 
-Data type: `String`
+Data type: `Stdlib::Filemode`
 
 set most/some files to this octal mode string
 
-Default value: `'0440'`
+Default value: `$rdbduprunner::mode`
 
-##### <a name="config_file"></a>`config_file`
+##### <a name="-rdbduprunner--backupset--config_file"></a>`config_file`
 
-Data type: `String`
+Data type: `Stdlib::UnixPath`
 
 config file in which to create the backupset definition
+must end in .yml or .yaml
 
-Default value: `"/etc/rdbduprunner/conf.d/backupset-${title}.conf"`
+Default value: `"${rdbduprunner::config_dir}/conf.d/backupset-${title}.yaml"`
 
-##### <a name="concat"></a>`concat`
+##### <a name="-rdbduprunner--backupset--allowfs"></a>`allowfs`
 
-Data type: `Boolean`
+Data type: `Optional[Variant[String,Array[String]]]`
 
-instead of creating a file, use concat to add to file with concat::fragment
+sets parameter of the same name in backupset
+see rdbduprunner docs for details
 
-Default value: ``false``
+Default value: `undef`
 
-##### <a name="host"></a>`host`
+##### <a name="-rdbduprunner--backupset--backupdestination"></a>`backupdestination`
 
 Data type: `Optional[String]`
 
-sets parameter of the same name in the backupset, although there is no default for the define, rdbduprunner uses localhost if it isn't set
+sets parameter of the same name in backupset
+see rdbduprunner docs for details
 
-Default value: ``undef``
+Default value: `undef`
 
-##### <a name="disabled"></a>`disabled`
+##### <a name="-rdbduprunner--backupset--checksum"></a>`checksum`
 
 Data type: `Optional[Boolean]`
 
-sets parameter of the same name in the backupset
+sets parameter of the same name in backupset
+see rdbduprunner docs for details
 
-Default value: ``undef``
+Default value: `undef`
 
-##### <a name="backupdestination"></a>`backupdestination`
-
-Data type: `Optional[String]`
-
-sets parameter of the same name in the backupset
-
-Default value: ``undef``
-
-##### <a name="inventory"></a>`inventory`
+##### <a name="-rdbduprunner--backupset--disabled"></a>`disabled`
 
 Data type: `Optional[Boolean]`
 
-sets parameter of the same name in the backupset
+sets parameter of the same name in backupset
+see rdbduprunner docs for details
 
-Default value: ``undef``
+Default value: `undef`
 
-##### <a name="inplace"></a>`inplace`
+##### <a name="-rdbduprunner--backupset--duplicitybinary"></a>`duplicitybinary`
+
+Data type: `Optional[Stdlib::UnixPath]`
+
+sets parameter of the same name in backupset
+see rdbduprunner docs for details
+
+Default value: `undef`
+
+##### <a name="-rdbduprunner--backupset--exclude"></a>`exclude`
+
+Data type: `Optional[Variant[String,Array[String]]]`
+
+sets parameter of the same name in backupset
+see rdbduprunner docs for details
+
+Default value: `undef`
+
+##### <a name="-rdbduprunner--backupset--host"></a>`host`
+
+Data type: `Optional[Stdlib::Host]`
+
+sets parameter of the same name in backupset
+see rdbduprunner docs for details
+
+Default value: `undef`
+
+##### <a name="-rdbduprunner--backupset--inplace"></a>`inplace`
 
 Data type: `Optional[Boolean]`
 
-sets parameter of the same name in the backupset
+sets parameter of the same name in backupset
+see rdbduprunner docs for details
 
-Default value: ``undef``
+Default value: `undef`
 
-##### <a name="prerun"></a>`prerun`
+##### <a name="-rdbduprunner--backupset--inventory"></a>`inventory`
+
+Data type: `Optional[Boolean]`
+
+sets parameter of the same name in backupset
+see rdbduprunner docs for details
+
+Default value: `undef`
+
+##### <a name="-rdbduprunner--backupset--maxage"></a>`maxage`
 
 Data type: `Optional[String]`
 
-sets parameter of the same name in the backupset
+sets parameter of the same name in backupset
+see rdbduprunner docs for details
 
-Default value: ``undef``
+Default value: `undef`
 
-##### <a name="postrun"></a>`postrun`
-
-Data type: `Optional[String]`
-
-sets parameter of the same name in the backupset
-
-Default value: ``undef``
-
-##### <a name="maxinc"></a>`maxinc`
+##### <a name="-rdbduprunner--backupset--maxinc"></a>`maxinc`
 
 Data type: `Optional[Integer]`
 
-sets parameter of the same name in the backupset
+sets parameter of the same name in backupset
+see rdbduprunner docs for details
 
-Default value: ``undef``
+Default value: `undef`
 
-##### <a name="allowfs"></a>`allowfs`
+##### <a name="-rdbduprunner--backupset--path"></a>`path`
 
-Data type: `Optional[Array[String]]`
+Data type: `Optional[Variant[String,Array[String]]]`
 
-sets parameter of the same name in the backupset
+sets parameter of the same name in backupset
+see rdbduprunner docs for details
 
-Default value: ``undef``
+Default value: `undef`
 
-##### <a name="paths"></a>`paths`
-
-Data type: `Optional[Array[String]]`
-
-for each entry in this array, create a Path X statement in backupset
-
-Default value: ``undef``
-
-##### <a name="excludes"></a>`excludes`
-
-Data type: `Optional[Array[String]]`
-
-for each entry in this array, create a Exclude X statement in backupset
-
-Default value: ``undef``
-
-##### <a name="skips"></a>`skips`
-
-Data type: `Optional[Array[String]]`
-
-for each entry in this array, create a Skip X statement in backupset
-
-Default value: ``undef``
-
-##### <a name="skipres"></a>`skipres`
-
-Data type: `Optional[Array[String]]`
-
-for each entry in this array, create a SkipRE X statement in backupset
-
-Default value: ``undef``
-
-##### <a name="ensure"></a>`ensure`
-
-Data type: `Enum['present','absent']`
-
-the usual present/absent magic
-
-Default value: `'present'`
-
-##### <a name="rtag"></a>`rtag`
+##### <a name="-rdbduprunner--backupset--postrun"></a>`postrun`
 
 Data type: `Optional[String]`
 
-override the tag in the backupset configuration, called rtag because tag is reserved
+sets parameter of the same name in backupset
+see rdbduprunner docs for details
 
-Default value: ``undef``
+Default value: `undef`
+
+##### <a name="-rdbduprunner--backupset--prerun"></a>`prerun`
+
+Data type: `Optional[String]`
+
+sets parameter of the same name in backupset
+see rdbduprunner docs for details
+
+Default value: `undef`
+
+##### <a name="-rdbduprunner--backupset--rdiffbackupbinary"></a>`rdiffbackupbinary`
+
+Data type: `Optional[Stdlib::UnixPath]`
+
+sets parameter of the same name in backupset
+see rdbduprunner docs for details
+
+Default value: `undef`
+
+##### <a name="-rdbduprunner--backupset--rsyncbinary"></a>`rsyncbinary`
+
+Data type: `Optional[Stdlib::UnixPath]`
+
+sets parameter of the same name in backupset
+see rdbduprunner docs for details
+
+Default value: `undef`
+
+##### <a name="-rdbduprunner--backupset--skip"></a>`skip`
+
+Data type: `Optional[Variant[String,Array[String]]]`
+
+sets parameter of the same name in backupset
+see rdbduprunner docs for details
+
+Default value: `undef`
+
+##### <a name="-rdbduprunner--backupset--skipfstype"></a>`skipfstype`
+
+Data type: `Optional[Variant[String,Array[String]]]`
+
+sets parameter of the same name in backupset
+see rdbduprunner docs for details
+
+Default value: `undef`
+
+##### <a name="-rdbduprunner--backupset--skipre"></a>`skipre`
+
+Data type: `Optional[Variant[String,Array[String]]]`
+
+sets parameter of the same name in backupset
+see rdbduprunner docs for details
+
+Default value: `undef`
+
+##### <a name="-rdbduprunner--backupset--sshcompress"></a>`sshcompress`
+
+Data type: `Optional[Boolean]`
+
+sets parameter of the same name in backupset
+see rdbduprunner docs for details
+
+Default value: `undef`
+
+##### <a name="-rdbduprunner--backupset--stats"></a>`stats`
+
+Data type: `Optional[Boolean]`
+
+sets parameter of the same name in backupset
+see rdbduprunner docs for details
+
+Default value: `undef`
+
+##### <a name="-rdbduprunner--backupset--rtag"></a>`rtag`
+
+Data type: `Optional[String]`
+
+sets tag parameter in backupset
+see rdbduprunner docs for details
+
+Default value: `undef`
+
+##### <a name="-rdbduprunner--backupset--trickle"></a>`trickle`
+
+Data type: `Optional[Integer]`
+
+sets parameter of the same name in backupset
+see rdbduprunner docs for details
+
+Default value: `undef`
+
+##### <a name="-rdbduprunner--backupset--tricklebinary"></a>`tricklebinary`
+
+Data type: `Optional[Stdlib::UnixPath]`
+
+sets parameter of the same name in backupset
+see rdbduprunner docs for details
+
+Default value: `undef`
+
+##### <a name="-rdbduprunner--backupset--useagent"></a>`useagent`
+
+Data type: `Optional[Boolean]`
+
+sets parameter of the same name in backupset
+see rdbduprunner docs for details
+
+Default value: `undef`
+
+##### <a name="-rdbduprunner--backupset--verbosity"></a>`verbosity`
+
+Data type: `Optional[Integer]`
+
+sets parameter of the same name in backupset
+see rdbduprunner docs for details
+
+Default value: `undef`
+
+##### <a name="-rdbduprunner--backupset--volsize"></a>`volsize`
+
+Data type: `Optional[Integer]`
+
+sets parameter of the same name in backupset
+see rdbduprunner docs for details
+
+Default value: `undef`
+
+##### <a name="-rdbduprunner--backupset--wholefile"></a>`wholefile`
+
+Data type: `Optional[Boolean]`
+
+sets parameter of the same name in backupset
+see rdbduprunner docs for details
+
+Default value: `undef`
+
+##### <a name="-rdbduprunner--backupset--zfsbinary"></a>`zfsbinary`
+
+Data type: `Optional[Stdlib::UnixPath]`
+
+sets parameter of the same name in backupset
+see rdbduprunner docs for details
+
+Default value: `undef`
+
+##### <a name="-rdbduprunner--backupset--file_ensure"></a>`file_ensure`
+
+Data type: `Enum['present','absent']`
+
+when set to absent, remove the config file instead of creating it
+
+Default value: `'present'`
+
+##### <a name="-rdbduprunner--backupset--sparse"></a>`sparse`
+
+Data type: `Optional[Boolean]`
+
+
+
+Default value: `undef`
+
+##### <a name="-rdbduprunner--backupset--excludes"></a>`excludes`
+
+Data type: `Optional[Array[String]]`
+
+
+
+Default value: `[]`
+
+##### <a name="-rdbduprunner--backupset--paths"></a>`paths`
+
+Data type: `Optional[Array[String]]`
+
+
+
+Default value: `[]`
+
+##### <a name="-rdbduprunner--backupset--skips"></a>`skips`
+
+Data type: `Optional[Array[String]]`
+
+
+
+Default value: `[]`
+
+##### <a name="-rdbduprunner--backupset--skipres"></a>`skipres`
+
+Data type: `Optional[Array[String]]`
+
+
+
+Default value: `[]`
 

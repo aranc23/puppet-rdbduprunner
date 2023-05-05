@@ -10,7 +10,7 @@
 # @param package_ensure
 #   passed to the package ensure resource, for specifying specific version or latest
 #
-# param extra_packages
+# @param extra_packages
 #   install these extras, presumably to make rdbduprunner work
 # @param owner
 #    set most/some files to this user or uid
@@ -76,12 +76,6 @@
 #   replaces static files in /etc/rdbduprunner/rdb-excludes, keyed by "tag" and then a list of excludes
 #   => { 'a-lnx005.divms.uiowa.edu-home-accx' => [ '/home/accx/hidden_stuff', '/home/accx/DVDs' ] }
 #
-# @param backupsets
-#   creates backupset definitions, refer to rdbduprunner documentation for specifics
-#
-# @param backupdestinations
-#   creates backupdestination definitions, refer to rdbduprunner documentation for specifics
-#
 # @param logrotate
 #   add a logrotate script for rdbduprunner logs
 # @param purge_excludes
@@ -95,12 +89,10 @@
 # @param awssecretaccesskey
 #   sets parameter of the same name in global
 #   see rdbduprunner docs for details
-# @param backupdestination
-#   sets parameter of the same name in global
-#   see rdbduprunner docs for details
-# @param backupset
-#   sets parameter of the same name in global
-#   see rdbduprunner docs for details
+# @param backupdestinations
+#   creates backupdestination definitions, refer to rdbduprunner documentation for specifics
+# @param backupsets
+#   creates backupset definitions, refer to rdbduprunner documentation for specifics
 # @param checksum
 #   sets parameter of the same name in global
 #   see rdbduprunner docs for details
