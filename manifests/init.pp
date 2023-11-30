@@ -340,7 +340,7 @@ class rdbduprunner
     rdiffbackupbinary => Optional[Stdlib::UnixPath],
     rsyncbinary => Optional[Stdlib::UnixPath],
     skip => Optional[Variant[String,Array[String]]],
-    skips => Optional[Variant[String,Array[String]]],
+    #skips => Optional[Variant[String,Array[String]]],
     skipfstype => Optional[Variant[String,Array[String]]],
     skipre => Optional[Variant[String,Array[String]]],
     skipres => Optional[Variant[String,Array[String]]],
