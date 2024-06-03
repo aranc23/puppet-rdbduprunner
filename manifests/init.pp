@@ -242,7 +242,7 @@ class rdbduprunner
   String $mode = '0440',
   String $config_dir = '/etc/rdbduprunner',
   Boolean $manage_conf_d = false,
-  String $config_file = '/etc/rdbduprunner/rdbduprunner.yaml',
+  Stdlib::UnixPath $config_file = '/etc/rdbduprunner/rdbduprunner.yaml',
 
   # the following are global rdbduprunner config options
   Optional[Variant[String,Array[String]]] $allowfs = undef,
@@ -381,8 +381,6 @@ class rdbduprunner
   contain rdbduprunner::install
   contain rdbduprunner::configure
   contain rdbduprunner::service
-
-  validate_re($config_file,'\.(yaml|yml)$', 'config file must end in yml or yaml')
 
   Class['::rdbduprunner::install']
   -> Class['::rdbduprunner::configure']
