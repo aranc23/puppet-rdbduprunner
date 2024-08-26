@@ -57,7 +57,13 @@
 # @param rdiffbackupbinary
 #   sets parameter of the same name in backupset
 #   see rdbduprunner docs for details
+# @param remoteuser
+#   sets parameter of the same name in backupset
+#   see rdbduprunner docs for details
 # @param rsyncbinary
+#   sets parameter of the same name in backupset
+#   see rdbduprunner docs for details
+# @param rsyncpath
 #   sets parameter of the same name in backupset
 #   see rdbduprunner docs for details
 # @param skip
@@ -67,6 +73,9 @@
 #   sets parameter of the same name in backupset
 #   see rdbduprunner docs for details
 # @param skipre
+#   sets parameter of the same name in backupset
+#   see rdbduprunner docs for details
+# @param sparse
 #   sets parameter of the same name in backupset
 #   see rdbduprunner docs for details
 # @param sshcompress
@@ -97,9 +106,6 @@
 #   sets parameter of the same name in backupset
 #   see rdbduprunner docs for details
 # @param zfsbinary
-#   sets parameter of the same name in backupset
-#   see rdbduprunner docs for details
-# @param rsyncpath
 #   sets parameter of the same name in backupset
 #   see rdbduprunner docs for details
 #
@@ -232,7 +238,9 @@ define rdbduprunner::backupset
     postrun => $postrun,
     prerun => $prerun,
     rdiffbackupbinary => $rdiffbackupbinary,
+    remoteuser => $remoteuser,
     rsyncbinary => $rsyncbinary,
+    rsyncpath => $rsyncpath,
     skip => $_skip,
     skipfstype => $skipfstype,
     skipre => $_skipre,
@@ -247,7 +255,6 @@ define rdbduprunner::backupset
     volsize => $volsize,
     wholefile => $wholefile,
     zfsbinary => $zfsbinary,
-    rsyncpath => $rsyncpath,
   }.filter |$k,$v| { $v =~ NotUndef } } }
 
   file { regsubst($config_file,'\.(yaml|yml)$','.conf'):
