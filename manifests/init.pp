@@ -198,6 +198,9 @@
 # @param zfssnapshot
 #   sets parameter of the same name in global
 #   see rdbduprunner docs for details
+# @param rsyncpath
+#   sets parameter of the same name in global
+#   see rdbduprunner docs for details
 # @example Basic usage
 #  include rdbduprunner
 #
@@ -283,6 +286,8 @@ class rdbduprunner
   Optional[Stdlib::UnixPath] $zfsbinary = undef,
   Optional[Boolean] $zfscreate = undef,
   Optional[Boolean] $zfssnapshot = undef,
+  Optional[Stdlib::UnixPath] $rsyncpath = undef,
+
   Hash[String,Struct[{
     allowfs => Optional[Variant[String,Array[String]]],
     awsaccesskeyid => Optional[String],
@@ -355,6 +360,7 @@ class rdbduprunner
     volsize => Optional[Integer],
     wholefile => Optional[Boolean],
     zfsbinary => Optional[Stdlib::UnixPath],
+    rsyncpath => Optional[Stdlib::UnixPath],
   }]] $backupsets = {},
 
   Array[String] $default_skips = [],

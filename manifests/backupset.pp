@@ -99,6 +99,9 @@
 # @param zfsbinary
 #   sets parameter of the same name in backupset
 #   see rdbduprunner docs for details
+# @param rsyncpath
+#   sets parameter of the same name in backupset
+#   see rdbduprunner docs for details
 #
 # @param file_ensure
 #   when set to absent, remove the config file instead of creating it
@@ -149,6 +152,7 @@ define rdbduprunner::backupset
   Optional[Integer] $volsize = undef,
   Optional[Boolean] $wholefile = undef,
   Optional[Stdlib::UnixPath] $zfsbinary = undef,
+  Optional[Stdlib::UnixPath] $rsyncpath = undef,
 
   # pluralized strings:
   #Optional[Array[String]] $allowfs = undef,
@@ -243,6 +247,7 @@ define rdbduprunner::backupset
     volsize => $volsize,
     wholefile => $wholefile,
     zfsbinary => $zfsbinary,
+    rsyncpath => $rsyncpath,
   }.filter |$k,$v| { $v =~ NotUndef } } }
 
   file { regsubst($config_file,'\.(yaml|yml)$','.conf'):

@@ -25,6 +25,7 @@ class rdbduprunner::configure
     prerun => $rdbduprunner::prerun,
     rdiffbackupbinary => $rdbduprunner::rdiffbackupbinary,
     rsyncbinary => $rdbduprunner::rsyncbinary,
+    rsyncpath => $rdbduprunner::rsyncpath,
     signkey => $rdbduprunner::signkey,
     skip => $rdbduprunner::skip,
     skipfstype => $rdbduprunner::skipfstype,
