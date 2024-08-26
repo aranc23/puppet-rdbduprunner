@@ -144,7 +144,13 @@
 # @param rdiffbackupbinary
 #   sets parameter of the same name in global
 #   see rdbduprunner docs for details
+# @param remoteuser
+#   sets parameter of the same name in global
+#   see rdbduprunner docs for details
 # @param rsyncbinary
+#   sets parameter of the same name in global
+#   see rdbduprunner docs for details
+# @param rsyncpath
 #   sets parameter of the same name in global
 #   see rdbduprunner docs for details
 # @param signkey
@@ -196,9 +202,6 @@
 #   sets parameter of the same name in global
 #   see rdbduprunner docs for details
 # @param zfssnapshot
-#   sets parameter of the same name in global
-#   see rdbduprunner docs for details
-# @param rsyncpath
 #   sets parameter of the same name in global
 #   see rdbduprunner docs for details
 # @example Basic usage
@@ -255,7 +258,7 @@ class rdbduprunner
   Optional[String] $defaultbackupdestination = undef,
   Optional[Stdlib::UnixPath] $duplicitybinary = undef,
   Optional[String] $encryptkey = undef,
-  Optional[String] $excludepath = undef,
+  Optional[Stdlib::UnixPath] $excludepath = undef,
   Optional[String] $facility = undef,
   Optional[String] $gpgpassphrase = undef,
   Optional[Boolean] $inplace = undef,
@@ -268,7 +271,9 @@ class rdbduprunner
   Optional[String] $postrun = undef,
   Optional[String] $prerun = undef,
   Optional[Stdlib::UnixPath] $rdiffbackupbinary = undef,
+  Optional[String] $remoteuser = undef,
   Optional[Stdlib::UnixPath] $rsyncbinary = undef,
+  Optional[Stdlib::UnixPath] $rsyncpath = undef,
   Optional[String] $signkey = undef,
   Optional[Variant[String,Array[String]]] $skip = undef,
   Optional[Variant[String,Array[String]]] $skipfstype = undef,
@@ -286,7 +291,6 @@ class rdbduprunner
   Optional[Stdlib::UnixPath] $zfsbinary = undef,
   Optional[Boolean] $zfscreate = undef,
   Optional[Boolean] $zfssnapshot = undef,
-  Optional[Stdlib::UnixPath] $rsyncpath = undef,
 
   Hash[String,Struct[{
     allowfs => Optional[Variant[String,Array[String]]],
@@ -338,14 +342,15 @@ class rdbduprunner
     inventory => Optional[Boolean],
     maxage => Optional[String],
     maxinc => Optional[Integer],
-    path => Optional[Variant[String,Array[String]]],
-    paths => Optional[Variant[String,Array[String]]],
+    path => Optional[Variant[Stdlib::Absolutepath,Array[Stdlib::Absolutepath]]],
+    paths => Optional[Variant[Stdlib::Absolutepath,Array[Stdlib::Absolutepath]]],
     postrun => Optional[String],
     prerun => Optional[String],
     rdiffbackupbinary => Optional[Stdlib::UnixPath],
+    remoteuser => Optional[String],
     rsyncbinary => Optional[Stdlib::UnixPath],
+    rsyncpath => Optional[Stdlib::UnixPath],
     skip => Optional[Variant[String,Array[String]]],
-    #skips => Optional[Variant[String,Array[String]]],
     skipfstype => Optional[Variant[String,Array[String]]],
     skipre => Optional[Variant[String,Array[String]]],
     skipres => Optional[Variant[String,Array[String]]],
@@ -360,7 +365,6 @@ class rdbduprunner
     volsize => Optional[Integer],
     wholefile => Optional[Boolean],
     zfsbinary => Optional[Stdlib::UnixPath],
-    rsyncpath => Optional[Stdlib::UnixPath],
   }]] $backupsets = {},
 
   Array[String] $default_skips = [],
