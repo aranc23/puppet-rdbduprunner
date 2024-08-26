@@ -84,8 +84,8 @@
 # @param stats
 #   sets parameter of the same name in backupset
 #   see rdbduprunner docs for details
-# @param rtag
-#   sets tag parameter in backupset
+# @param tag
+#   sets parameter of the same name in backupset
 #   see rdbduprunner docs for details
 # @param trickle
 #   sets parameter of the same name in backupset
@@ -139,11 +139,13 @@ define rdbduprunner::backupset
   Optional[Boolean] $inventory = undef,
   Optional[String] $maxage = undef,
   Optional[Integer] $maxinc = undef,
-  Optional[Variant[String,Array[String]]] $path = undef,
+  Optional[Variant[Stdlib::Absolutepath,Array[Stdlib::Absolutepath]]] $path = undef,
   Optional[String] $postrun = undef,
   Optional[String] $prerun = undef,
   Optional[Stdlib::UnixPath] $rdiffbackupbinary = undef,
+  Optional[String] $remoteuser = undef,
   Optional[Stdlib::UnixPath] $rsyncbinary = undef,
+  Optional[Stdlib::UnixPath] $rsyncpath = undef,
   Optional[Variant[String,Array[String]]] $skip = undef,
   Optional[Variant[String,Array[String]]] $skipfstype = undef,
   Optional[Variant[String,Array[String]]] $skipre = undef,
@@ -158,7 +160,6 @@ define rdbduprunner::backupset
   Optional[Integer] $volsize = undef,
   Optional[Boolean] $wholefile = undef,
   Optional[Stdlib::UnixPath] $zfsbinary = undef,
-  Optional[Stdlib::UnixPath] $rsyncpath = undef,
 
   # pluralized strings:
   #Optional[Array[String]] $allowfs = undef,
