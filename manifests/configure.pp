@@ -24,6 +24,7 @@ class rdbduprunner::configure
     postrun => $rdbduprunner::postrun,
     prerun => $rdbduprunner::prerun,
     rdiffbackupbinary => $rdbduprunner::rdiffbackupbinary,
+    remoteuser => $rdbduprunner::remoteuser,
     rsyncbinary => $rdbduprunner::rsyncbinary,
     rsyncpath => $rdbduprunner::rsyncpath,
     signkey => $rdbduprunner::signkey,
