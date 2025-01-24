@@ -173,7 +173,9 @@ define rdbduprunner::backupset
 )
 {
   include rdbduprunner
-  validate_re($config_file,'\.(yaml|yml)$', 'config file must end in yml or yaml')
+  if ($config_file !~ Pattern[/\.(yaml|yml)$/]) {
+    fail('config file must end in yml or yaml')
+  }
   if(length($excludes) > 0) {
     notice("backupset excludes option is deprecated in favor of exclude")
     if($exclude) {
