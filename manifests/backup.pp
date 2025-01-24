@@ -45,14 +45,14 @@ class rdbduprunner::backup
   Hash[String,Array[String]] $paths,
   Enum['present','absent'] $ensure  = 'present',
   Optional[String] $directory       = '/etc/rdbduprunner/conf.d',
-  Optional[String] $host            = $::hostname,
+  Optional[String] $host            = $facts['networking']['hostname'],
   Optional[Boolean] $disabled       = false,
   Optional[String] $prerun          = undef,
   Optional[String] $postrun         = undef,
   Optional[Integer] $priority       = undef,
 ) {
   notice('this class is deprecated in favor of the main rdbduprunner class')
-  validate_hash($paths)
+
   include rdbduprunner
   file { "${directory}/rdbduprunner-backup.conf":
     ensure  => $ensure,
