@@ -31,12 +31,6 @@
 #    config file to manage, don't change this
 #    must end in .yaml or .yml
 #
-# @param default_skips
-#    adds these to the skips array in backup sets, kind of useless, may be removed
-#
-# @param default_skipres
-#    adds these to the skipres array in backup sets, kind of useless, may be removed
-#
 # @param cron_method
 #    how to configure the invocation of rdbduprunner periodically
 #    systemd is not implemented and none configures none
@@ -365,8 +359,6 @@ class rdbduprunner
     zfsbinary => Optional[Stdlib::UnixPath],
   }]] $backupsets = {},
 
-  Array[String] $default_skips = [],
-  Array[String] $default_skipres = [],
   Enum['cron','cron.d','anacron','systemd','none'] $cron_method = 'anacron',
   Enum['monthly','weekly','daily','hourly','yearly'] $anacron_frequency = 'daily',
   String $cron_resource_name = 'rdbduprunner',
