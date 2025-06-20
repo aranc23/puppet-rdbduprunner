@@ -72,6 +72,8 @@
 #
 # @param logrotate
 #   add a logrotate script for rdbduprunner logs
+# @param logrotate_source
+#   source for logrotate script
 # @param purge_excludes
 #   purge non-managed files from the exclude directories (rdb-excludes and excludes)
 # @param allowfs
@@ -375,6 +377,7 @@ class rdbduprunner
   Hash[String,Array[String]] $rsync_tag_excludes = {},
   Hash[String,Array[String]] $rdbdup_tag_excludes = {},
   Enum['present','absent'] $logrotate = 'present',
+  Stdlib::Filesource $logrotate_source = 'puppet:///modules/rdbduprunner/logrotate.d/rdbduprunner',
   Boolean $purge_excludes = false,
 ) {
 

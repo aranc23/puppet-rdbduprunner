@@ -52,6 +52,6 @@ class rdbduprunner::service
     owner  => $rdbduprunner::owner,
     group  => $rdbduprunner::group,
     mode   => '0644',
-    source => 'puppet:///modules/rdbduprunner/logrotate.d/rdbduprunner',
+    source => $rdbduprunner::logrotate_source,
   }
 }
