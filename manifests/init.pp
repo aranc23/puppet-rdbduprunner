@@ -230,7 +230,7 @@
 #
 # @example Configuring a per-host-filesystem exclude file
 #   rdbduprunner::rsync_tag_excludes:
-#     - 'a-lnx005-home-accx':
+#     'a-lnx005-home-accx':
 #       - '.cache'
 #       - 'Downloads'
 #
