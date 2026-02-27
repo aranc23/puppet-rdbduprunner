@@ -66,6 +66,9 @@
 # @param skipre
 #   sets parameter of the same name in backupdestination
 #   see rdbduprunner docs for details
+# @param sparse
+#   sets parameter of the same name in backupdestination
+#   see rdbduprunner docs for details
 # @param sshcompress
 #   sets parameter of the same name in backupdestination
 #   see rdbduprunner docs for details
@@ -121,8 +124,7 @@
 #   rdbduprunner::backupdestination { 'mylss':
 #     path => '/mnt/nfs/lc-stor/bob/backups',
 #   }
-define rdbduprunner::backupdestination
-(
+define rdbduprunner::backupdestination (
   Stdlib::UnixPath $path,
   Optional[Variant[String,Array[String]]] $allowfs = undef,
   Optional[String] $awsaccesskeyid = undef,
@@ -163,49 +165,50 @@ define rdbduprunner::backupdestination
   Variant[String,Integer] $group = $rdbduprunner::group,
   Stdlib::Filemode $mode = $rdbduprunner::mode,
   Stdlib::UnixPath $config_file = "${rdbduprunner::config_dir}/conf.d/backupdestination-${title}.yaml",
-)
-{
+) {
   include rdbduprunner
   if ($config_file !~ Pattern[/\.(yaml|yml)$/]) {
     fail('config file must end in yml or yaml')
   }
 
-  $_backupdestination = { backupdestination => { $title => {
-    allowfs => $allowfs,
-    awsaccesskeyid => $awsaccesskeyid,
-    awssecretaccesskey => $awssecretaccesskey,
-    busted => $busted,
-    checksum => $checksum,
-    duplicitybinary => $duplicitybinary,
-    encryptkey => $encryptkey,
-    gpgpassphrase => $gpgpassphrase,
-    inplace => $inplace,
-    maxage => $maxage,
-    maxinc => $maxinc,
-    minfree => $minfree,
-    path => $path,
-    percentused => $percentused,
-    postrun => $postrun,
-    prerun => $prerun,
-    rdiffbackupbinary => $rdiffbackupbinary,
-    rsyncbinary => $rsyncbinary,
-    signkey => $signkey,
-    skip => $skip,
-    skipfstype => $skipfstype,
-    skipre => $skipre,
-    sparse => $sparse,
-    sshcompress => $sshcompress,
-    stats => $stats,
-    trickle => $trickle,
-    tricklebinary => $tricklebinary,
-    'type' => $backup_type,
-    useagent => $useagent,
-    verbosity => $verbosity,
-    volsize => $volsize,
-    wholefile => $wholefile,
-    zfsbinary => $zfsbinary,
-    zfscreate => $zfscreate,
-    zfssnapshot => $zfssnapshot,
+  $_backupdestination = {
+    backupdestination => {
+      $title => {
+        allowfs => $allowfs,
+        awsaccesskeyid => $awsaccesskeyid,
+        awssecretaccesskey => $awssecretaccesskey,
+        busted => $busted,
+        checksum => $checksum,
+        duplicitybinary => $duplicitybinary,
+        encryptkey => $encryptkey,
+        gpgpassphrase => $gpgpassphrase,
+        inplace => $inplace,
+        maxage => $maxage,
+        maxinc => $maxinc,
+        minfree => $minfree,
+        path => $path,
+        percentused => $percentused,
+        postrun => $postrun,
+        prerun => $prerun,
+        rdiffbackupbinary => $rdiffbackupbinary,
+        rsyncbinary => $rsyncbinary,
+        signkey => $signkey,
+        skip => $skip,
+        skipfstype => $skipfstype,
+        skipre => $skipre,
+        sparse => $sparse,
+        sshcompress => $sshcompress,
+        stats => $stats,
+        trickle => $trickle,
+        tricklebinary => $tricklebinary,
+        'type' => $backup_type,
+        useagent => $useagent,
+        verbosity => $verbosity,
+        volsize => $volsize,
+        wholefile => $wholefile,
+        zfsbinary => $zfsbinary,
+        zfscreate => $zfscreate,
+        zfssnapshot => $zfssnapshot,
   }.filter |$k,$v| { $v =~ NotUndef } } }
 
   file { regsubst($config_file,'\.(yaml|yml)$','.conf'):
