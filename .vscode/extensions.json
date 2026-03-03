@@ -1,7 +1,5 @@
 {
   "recommendations": [
-    "puppet.puppet-vscode",
-    "rebornix.Ruby",
-    "shopify.ruby-lsp"
+    "puppet.puppet-vscode"
   ]
 }
